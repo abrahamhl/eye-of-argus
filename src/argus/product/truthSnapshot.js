@@ -83,6 +83,11 @@ export function buildTruthSnapshot({ rootDir = REPO_ROOT } = {}) {
       records: adapters,
     },
     workspace: { available: existsSync(join(rootDir, 'src', 'argus', 'workspace', 'store.js')) },
+    validation: {
+      fieldApp: existsSync(join(rootDir, 'site', 'field', 'app.js')),
+      validateCli: existsSync(join(rootDir, 'bin', 'validate.mjs')),
+      mergeCli: existsSync(join(rootDir, 'bin', 'merge-observations.mjs')),
+    },
     analystMode: { available: existsSync(join(rootDir, 'site', 'app.js')) },
     cesium: { available: false },
     calibration: { status: 'NOT_YET_CALIBRATED', protocol: 'docs/REAL_WORLD_CALIBRATION_PROTOCOL.md' },

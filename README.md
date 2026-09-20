@@ -11,6 +11,11 @@ dependency-free HUD that renders the real core's output for Arnhem (per-metric
 views, forecast, evidence drill-down, licence engine, privacy suppression, and
 an investor XYZ view).
 
+**Field validation kit:** https://abrahamhl.github.io/eye-of-argus/field/ — an
+offline PWA to collect ground-truth crowd observations (no account, no personal
+data) and turn them into calibration metrics. See
+[`docs/VALIDATION_GUIDE.md`](docs/VALIDATION_GUIDE.md).
+
 > Eye of Argus is an **original derivative integrating concepts from** the
 > MIT-licensed [`bilawalsidhu/gods-eye-view`](https://github.com/bilawalsidhu/gods-eye-view).
 > It is **not technically a GitHub fork**, and we do not claim fork status.

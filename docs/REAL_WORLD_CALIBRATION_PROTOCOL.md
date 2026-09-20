@@ -1,5 +1,8 @@
 # Real-world calibration protocol
 
+Operator instructions (Spanish + English): [`VALIDATION_GUIDE.md`](VALIDATION_GUIDE.md).
+Field app: `https://abrahamhl.github.io/eye-of-argus/field/`.
+
 This is the path from "engineering demo" to "measured predictive evidence".
 Until this protocol has been executed and its results reviewed, the system must
 report **NOT YET CALIBRATED** everywhere it shows confidence. No accuracy,

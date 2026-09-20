@@ -1,0 +1,11 @@
+{
+  "name": "Eye of Argus — Field Validation",
+  "short_name": "Argus Field",
+  "description": "Offline ground-truth collection for crowd/calm validation. No account, no personal data.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#05080d",
+  "theme_color": "#05080d",
+  "orientation": "portrait"
+}

@@ -1,0 +1,28 @@
+:root { color-scheme: dark; --bg:#05080d; --panel:#0b1119; --line:#1d2a38; --ink:#dbe6f2; --muted:#8093a8; --cyan:#37e0ff; --amber:#ffb454; --red:#f87171; --green:#4ade80; }
+* { box-sizing: border-box; }
+body { margin:0; background:radial-gradient(1000px 600px at 70% -10%, #0b1a24, var(--bg) 60%); color:var(--ink); font:14px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+header { padding:14px 16px; border-bottom:1px solid var(--line); position:sticky; top:0; background:linear-gradient(180deg, rgba(14,22,33,.95), rgba(5,8,13,.7)); z-index:3; }
+h1 { margin:0; font-size:16px; letter-spacing:2px; }
+h2 { font-size:12px; letter-spacing:1px; color:var(--muted); margin:0 0 10px; }
+.net { margin:4px 0 0; font-size:11px; color:var(--green); }
+.net.offline { color:var(--amber); }
+.banner { margin:12px 16px 0; border:2px solid #f59e0b; background:#2a1c05; color:#fde68a; padding:8px 12px; border-radius:8px; font-size:12px; }
+main { padding:12px 16px 40px; display:grid; gap:12px; max-width:720px; margin:0 auto; }
+.card { background:linear-gradient(180deg,#0e1621,#0b1119); border:1px solid var(--line); border-radius:10px; padding:12px; }
+label { display:block; font-size:12px; color:var(--muted); margin:8px 0; }
+input, select { width:100%; margin-top:4px; background:#0b141d; border:1px solid var(--line); color:var(--ink); border-radius:6px; padding:8px; font:inherit; }
+.row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.row label { flex:1 1 140px; margin:6px 0; }
+button { background:#12202c; border:1px solid var(--line); color:var(--ink); padding:9px 14px; border-radius:8px; font:inherit; cursor:pointer; }
+button.primary { background:#0e3a4a; border-color:#155e75; color:#bdf3ff; width:100%; margin-top:10px; }
+button.danger, .link.danger { color:var(--red); }
+button.link { background:none; border:0; padding:0 6px; }
+.file { display:inline-block; margin:0; }
+.file input { display:none; }
+.muted { color:var(--muted); font-size:12px; }
+code { background:#0b141d; padding:1px 5px; border-radius:4px; }
+ul { list-style:none; margin:8px 0 0; padding:0; font-size:12px; }
+ul li { border-bottom:1px solid var(--line); padding:6px 0; }
+footer { padding:0 16px 30px; color:var(--muted); font-size:12px; max-width:720px; margin:0 auto; }
+a { color:var(--cyan); }
+@media (max-width:520px) { .row { flex-direction:column; align-items:stretch; } }

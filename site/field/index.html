@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Eye of Argus — Field Validation</title>
+  <meta name="theme-color" content="#05080d">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>EYE OF ARGUS · FIELD</h1>
+    <p id="net" class="net">status: …</p>
+  </header>
+
+  <div class="banner" role="alert">
+    GROUND-TRUTH COLLECTION. Observe only public space. Record bands and
+    approximate ranges — never names, faces, plates or personal data. Offline-first:
+    everything is stored on this device until you export it.
+  </div>
+
+  <main>
+    <section class="card">
+      <h2>1 · Location</h2>
+      <div class="row">
+        <button id="geo" type="button">Use my location</button>
+        <span id="geoStatus" class="muted">no location yet</span>
+      </div>
+      <div class="row">
+        <label>Latitude <input id="lat" type="number" step="0.00001" inputmode="decimal"></label>
+        <label>Longitude <input id="lon" type="number" step="0.00001" inputmode="decimal"></label>
+      </div>
+      <label>Place name <input id="name" type="text" placeholder="e.g. Park Sonsbeek, Arnhem"></label>
+    </section>
+
+    <section class="card">
+      <h2>2 · Observation (30 s)</h2>
+      <label>Band
+        <select id="band">
+          <option value="LOW">LOW — mostly empty; individuals pass</option>
+          <option value="MODERATE">MODERATE — steady flow; several people</option>
+          <option value="HIGH">HIGH — dense, sustained flow</option>
+          <option value="VERY HIGH">VERY HIGH — congested; movement slowed</option>
+        </select>
+      </label>
+      <div class="row">
+        <label>Count low <input id="countLow" type="number" min="0" inputmode="numeric"></label>
+        <label>Count high <input id="countHigh" type="number" min="0" inputmode="numeric"></label>
+      </div>
+      <div class="row">
+        <label>Observer <input id="observer" type="text" maxlength="4" placeholder="AB"></label>
+        <label>Seconds <input id="duration" type="number" value="30" min="10"></label>
+      </div>
+      <label>Notes (optional) <input id="notes" type="text" placeholder="weather, event, market day…"></label>
+      <button id="save" type="button" class="primary">Save observation</button>
+      <p id="saveStatus" class="muted"></p>
+    </section>
+
+    <section class="card">
+      <h2>3 · Saved on this device (<span id="count">0</span>)</h2>
+      <div class="row">
+        <button id="export" type="button">Export JSONL</button>
+        <label class="file">Import JSONL <input id="import" type="file" accept=".jsonl,.txt,application/json"></label>
+        <button id="clear" type="button" class="danger">Clear all</button>
+      </div>
+      <p class="muted">Multiple observers: each exports their file, then merge them with<br>
+        <code>node bin/merge-observations.mjs a.jsonl b.jsonl --out merged.jsonl</code></p>
+      <ul id="list"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Rubric</h2>
+      <ul>
+        <li><b>LOW</b> — mostly empty; individuals pass.</li>
+        <li><b>MODERATE</b> — steady flow; several people present.</li>
+        <li><b>HIGH</b> — dense, sustained flow; limited standing room.</li>
+        <li><b>VERY HIGH</b> — congested; movement slowed.</li>
+      </ul>
+      <p class="muted">Count ranges are optional and approximate. They are used for MAE only.</p>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../">← simulator</a> · <a href="https://github.com/abrahamhl/eye-of-argus" target="_blank" rel="noopener">source</a>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

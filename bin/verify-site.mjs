@@ -35,6 +35,16 @@ if (existsSync(join(SITE, 'app.js'))) {
   check(app.includes('synthetic-banner'), 'app.js must reveal the synthetic banner');
 }
 
+// Field validation PWA must ship with the artifact.
+for (const file of ['index.html', 'app.js', 'styles.css', 'manifest.webmanifest', 'sw.js']) {
+  check(existsSync(join(SITE, 'field', file)), `missing site/field/${file}`);
+}
+if (existsSync(join(SITE, 'field', 'index.html'))) {
+  const field = readFileSync(join(SITE, 'field', 'index.html'), 'utf8');
+  check(field.includes('app.js'), 'field/index.html does not reference app.js');
+  check(field.includes('GROUND-TRUTH'), 'field app must state it is ground-truth collection');
+}
+
 let data = null;
 if (existsSync(join(SITE, 'data.json'))) {
   try { data = JSON.parse(readFileSync(join(SITE, 'data.json'), 'utf8')); }
@@ -56,6 +66,7 @@ if (data) {
   check(inv.adaptersLiveCapable === snapshot.adapters.liveCapable, 'investorSnapshot live-capable adapters drifted');
   check(inv.calibration === 'NOT_YET_CALIBRATED', 'investorSnapshot calibration must be NOT_YET_CALIBRATED');
   check(inv.commercialSafe === 'ACTIVE', 'investorSnapshot commercial-safe must be ACTIVE');
+  check(inv.fieldValidation === 'AVAILABLE', 'investorSnapshot field validation must be AVAILABLE');
 
   // Calibration truth must never be overstated.
   check(data.calibration?.status === 'NOT_YET_CALIBRATED', 'calibration status must be NOT_YET_CALIBRATED');

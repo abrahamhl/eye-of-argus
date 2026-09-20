@@ -494,6 +494,7 @@ function renderBrief(lower) {
       <tr><td>REMOTE LIVE-VERIFIED (this run)</td><td>${snap.adaptersRemoteLiveVerified}</td></tr>
       <tr><td>CALIBRATION</td><td>${escapeHtml(snap.calibration)}</td></tr>
       <tr><td>OFFLINE WORKSPACE</td><td>${escapeHtml(snap.offlineWorkspace)}</td></tr>
+      <tr><td>FIELD VALIDATION KIT</td><td>${escapeHtml(snap.fieldValidation)}</td></tr>
       <tr><td>ANALYST MODE</td><td>${escapeHtml(snap.analystMode)}</td></tr>
       <tr><td>COMMERCIAL-SAFE POLICY</td><td>${escapeHtml(snap.commercialSafe)}</td></tr>
       <tr><td>CESIUM</td><td>${escapeHtml(snap.cesium)}</td></tr>

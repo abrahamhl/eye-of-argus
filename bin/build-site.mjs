@@ -186,6 +186,7 @@ const data = {
     adaptersRemoteLiveVerified: snapshot.adapters.remoteLiveVerified,
     calibration: snapshot.calibration.status,
     offlineWorkspace: snapshot.workspace.available ? 'VERIFIED' : 'NOT AVAILABLE',
+    fieldValidation: snapshot.validation.fieldApp && snapshot.validation.validateCli ? 'AVAILABLE' : 'NOT AVAILABLE',
     analystMode: snapshot.analystMode.available ? 'AVAILABLE' : 'NOT AVAILABLE',
     commercialSafe: snapshot.commercialSafe.enabled ? 'ACTIVE' : 'DISABLED',
     cesium: snapshot.cesium.available ? 'INTEGRATED' : 'NOT YET INTEGRATED',

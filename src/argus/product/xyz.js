@@ -232,6 +232,22 @@ export const XYZ_ENTRIES = Object.freeze([
     updatedAt: '2026-09-20',
   },
   {
+    id: 'xyz-field-validation',
+    category: 'calibration',
+    audience: ['user', 'developer', 'investor'],
+    x: 'Anyone can collect ground-truth crowd observations offline and turn them into calibration metrics.',
+    y: 'Tests cover inter-observer agreement (Fleiss kappa), accuracy with Wilson intervals, false-high/low rates, MAE, Brier and ECE, plus merge/dedupe and JSONL parsing.',
+    z: 'Offline field PWA + merge and validate CLIs + calibration metrics modules.',
+    evidence: {
+      tests: ['test/calibration-validation.test.mjs'],
+      source: ['site/field/app.js', 'bin/validate.mjs', 'bin/merge-observations.mjs', 'src/argus/calibration/validate.js'],
+      commit: null,
+    },
+    status: XYZ_STATUS.VERIFIED,
+    visibility: 'public',
+    updatedAt: '2026-09-20',
+  },
+  {
     id: 'xyz-calibration-pipeline',
     category: 'calibration',
     audience: ['developer', 'investor'],
