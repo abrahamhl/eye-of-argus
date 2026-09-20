@@ -11,6 +11,7 @@ Date: 2026-09-20. Model: DeepSeek V4.1 Flash.
 | `eb8770c` | feat(adapters): real GTFS-RT and Open-Meteo sources with offline cache (P1) |
 | `9a61002` | docs(ci): calibration protocol, source blockers, pinned actions, AUDIT_FINAL |
 | `593abf8` | feat(experiments): NDW DATEX II adapter, offline workspace, analyst mode |
+| `9633135` | feat(truth): XYZ registry, Truth Snapshot and drift gates |
 
 Baseline before this branch: `f735316` (public repo `abrahamhl/eye-of-argus`,
 65 tests at that time, CI + Pages green). Current generated counts live in
