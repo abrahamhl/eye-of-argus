@@ -1,5 +1,7 @@
 # Eye of Argus
 
+[![CI](https://github.com/abrahamhl/eye-of-argus/actions/workflows/ci.yml/badge.svg)](https://github.com/abrahamhl/eye-of-argus/actions/workflows/ci.yml)
+
 A privacy-preserving, **offline-first** geospatial intelligence and human-context
 engine. It fuses heterogeneous public sources through a disciplined adapter
 architecture to estimate human activity — and it shows its evidence.
