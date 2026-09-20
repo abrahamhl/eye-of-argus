@@ -28,6 +28,19 @@ Phase: intelligence core scaffolded and tested; live adapters + UI pending.
 node --test test/*.test.mjs
 ```
 
+## Deployment
+
+- Public repository: https://github.com/abrahamhl/eye-of-argus (branch `main`).
+- CI workflow `.github/workflows/ci.yml` runs on push/PR/manual, Node 20.x and
+  22.x, and is **verified green** on GitHub:
+  - asserts zero runtime dependencies
+  - syntax-checks every `src/`, `bin/`, `test/` script
+  - `# tests 65 / # pass 65`
+  - runs the Arnhem vertical slice
+  - calibration CLI refuses a synthetic fixture and accepts it with `--allow-synthetic`
+  - provenance job confirms `LICENSE`, `NOTICE.md` and the upstream SHA
+- First two runs: `35535133849` (15s) and `35535169906` (16s), both **success**.
+
 ## Not yet done (do not claim otherwise)
 
 - Live adapters (NDW, OVapi, PDOK) — only synthetic fixtures exist.

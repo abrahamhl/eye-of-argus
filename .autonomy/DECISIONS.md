@@ -33,6 +33,9 @@ Opt-in telemetry exposes only bands; cells below `k=5` contributors are withheld
 ## D008 — Node `--test` glob
 `node --test test/` does not work on Node 22; use `node --test test/*.test.mjs`.
 
-## D009 — Local repo first, no remote yet
-Git initialised locally. Creating a remote repository / choosing visibility is
-an owner decision and is not performed autonomously.
+## D009 — Remote repository created on explicit owner request
+Initially the repository was local-only. On explicit owner instruction it was
+published as a **public** GitHub repository at `abrahamhl/eye-of-argus`
+(default branch `main`). Content is synthetic, carries no secrets, and is MIT
+licensed with upstream attribution in `NOTICE.md`. Visibility can be changed by
+the owner at any time.
