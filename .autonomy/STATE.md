@@ -66,6 +66,18 @@ node --test test/*.test.mjs
 - Calibration protocol + source candidate/blocker docs; CI actions pinned to SHAs.
 - Tests: **94/94 pass**. Commits `7cafb90`, `eb8770c`.
 
+## Session 3 — next experiments
+
+- NDW DATEX II unblocked: bounded forward-only streaming parser
+  (`src/argus/sources/adapters/datex.js`); live run parsed **20,532 sites** of a
+  ~217 MB file; Arnhem slice recorded as a small fixture; `ndw-traffic-live`
+  adapter added (mobility, CC0-1.0).
+- Offline workspace: `src/argus/workspace/store.js` (user-owned, persisted,
+  never upgrades freshness) + tests.
+- Analyst mode tab in the simulator: source provenance, adapter versions,
+  calibration status and live/synthetic separation.
+- Tests: **94/94 pass**. Commit `593abf8`.
+
 ## Not yet done (do not claim otherwise)
 
 - Live adapters (NDW, OVapi, PDOK) — only synthetic fixtures exist.

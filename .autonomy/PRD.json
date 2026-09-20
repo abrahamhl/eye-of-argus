@@ -49,9 +49,11 @@
     { "id": "S35", "title": "Live adapters: OVapi GTFS-RT + Open-Meteo (fixture-first)", "status": "done", "artifact": "src/argus/sources/adapters/", "commit": "eb8770c" },
     { "id": "S36", "title": "Offline cache + correlation damping + versioned config", "status": "done", "artifact": "src/argus/config/methodology.js", "commit": "eb8770c" },
     { "id": "S37", "title": "Evidence Inspector (why this number)", "status": "done", "artifact": "src/argus/evidence/explain.js" },
-    { "id": "S38", "title": "NDW DATEX II adapter", "status": "blocked", "note": "needs a bounded streaming DATEX II parser" },
+    { "id": "S38", "title": "NDW DATEX II adapter", "status": "done", "artifact": "src/argus/sources/adapters/datex.js", "commit": "593abf8", "evidence": "20,532 live sites parsed; Arnhem fixture recorded" },
     { "id": "S39", "title": "Real-world calibration pilot", "status": "blocked", "note": "requires lawful field ground truth" },
-    { "id": "S40", "title": "Cesium globe integration (separate presentation layer)", "status": "todo" }
+    { "id": "S40", "title": "Persisted offline workspace", "status": "done", "artifact": "src/argus/workspace/store.js" },
+    { "id": "S41", "title": "Analyst mode (provenance + calibration status)", "status": "done", "artifact": "site/app.js" },
+    { "id": "S42", "title": "Cesium globe integration (separate presentation layer)", "status": "todo" }
   ],
   "nextStories": ["S03", "S27", "S28", "S30", "S29", "S19"]
 }

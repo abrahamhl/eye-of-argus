@@ -2,30 +2,29 @@
 
 Execute top-down. Each story: implement → test → commit → update STATE.
 
-## S33 — NDW DATEX II adapter (blocked)
-- Need a bounded, streaming, zero-dependency DATEX II reader.
-- Deliverable: `ndw-traffic-live` adapter + recorded fixture + tests.
-- Documented blocker in `docs/SOURCE_CANDIDATES.md`.
+## Done recently
+- S33/S35/S36/S37/S38/S40/S41: normalized confidence, synthetic honesty, live
+  adapters (OVapi GTFS-RT, Open-Meteo, NDW DATEX II), offline cache, versioned
+  config, Evidence Inspector, offline workspace, Analyst mode.
 
-## S34 — Calibration pilot
+## S42 — Cesium globe integration (next, large)
+- Separate presentation boundary; reuse upstream visual architecture with
+  attribution. Do not import upstream wholesale.
+- Deliverable: GLOBAL → CITY → AREA → PLACE → intelligence card, consuming the
+  core's estimates. Presentation may carry its own deps; the core stays
+  zero-dependency.
+
+## S39 — Calibration pilot (blocked)
 - Run `docs/REAL_WORLD_CALIBRATION_PROTOCOL.md` on 10–20 Arnhem sites.
 - Publish N, confusion matrix, Brier, ECE — or keep NOT YET CALIBRATED.
 - No ground truth → do not start.
 
-## S35 — Persisted offline workspace
-- Save places/areas + last-known observations locally; reuse `offlineCache`.
-- UI must show CACHED/STALE.
+## S43 — Live-smoke reliability history
+- Persist live-smoke outcomes over time and record provider reliability in
+  `docs/SOURCE_CANDIDATES.md`.
 
-## S36 — Cesium globe integration
-- Separate presentation boundary; reuse upstream visual architecture with
-  attribution. Do not import upstream wholesale.
-
-## S37 — Analyst mode
-- Source provenance, temporal history, cross-source corroboration view.
-
-## S38 — Live smoke on schedule
-- Already added (`.github/workflows/live-smoke.yml`); observe a few runs and
-  record provider reliability in SOURCE_CANDIDATES.
+## S44 — Offline replay mode
+- Full offline replay from the workspace store; UI must label CACHED/STALE.
 
 ## Continuation protocol
 1. Read STATE.md; `git status`; read PRD.json.
