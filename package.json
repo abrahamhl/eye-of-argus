@@ -1,0 +1,15 @@
+{
+  "name": "eye-of-argus",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Privacy-preserving, offline-first geospatial intelligence and human-context engine (derivative of gods-eye-view).",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "demo:arnhem": "node bin/arnhem-demo.mjs"
+  }
+}

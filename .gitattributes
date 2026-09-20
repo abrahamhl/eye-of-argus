@@ -1,0 +1,2 @@
+# Preserve LF everywhere so scripts behave identically on Linux CI and Git Bash.
+* text=auto eol=lf
