@@ -24,19 +24,19 @@ export function occupancyBand(value) {
 
 /**
  * Suppress a single grid cell. `count` must be an aggregate, never an identity
- * list. Below k contributors the cell is withheld entirely.
+ * list. Below k contributors the cell is withheld entirely. Released cells
+ * expose a coarse band only — never the exact count.
  */
 export function suppressCell({ count, k = DEFAULT_K } = {}) {
   if (count === null || count === undefined || !Number.isFinite(count)) {
-    return Object.freeze({ state: CELL_STATE.UNAVAILABLE, suppressed: true, band: 'UNAVAILABLE' });
+    return Object.freeze({ state: CELL_STATE.UNAVAILABLE, suppressed: true });
   }
   if (count < k) {
-    return Object.freeze({ state: CELL_STATE.SUPPRESSED, suppressed: true, band: occupancyBand(count) });
+    return Object.freeze({ state: CELL_STATE.SUPPRESSED, suppressed: true });
   }
   return Object.freeze({
     state: CELL_STATE.RELEASED,
     suppressed: false,
-    value: count,
     band: occupancyBand(count),
   });
 }
@@ -77,13 +77,20 @@ function gridStep(cellSizeM) {
 export function createPrivacyBudget({ windowMs = 300_000, maxQueries = 30 } = {}) {
   let windowStart = null;
   let used = 0;
+  let lastNow = null;
   return {
     consume(nowMs) {
+      if (!Number.isFinite(nowMs)) return { allowed: false, reason: 'invalid-clock', used, remaining: 0 };
+      // Reject non-monotonic time: a caller cannot rewind or jump the window.
+      if (lastNow !== null && nowMs < lastNow) {
+        return { allowed: false, reason: 'non-monotonic-clock', used, remaining: Math.max(0, maxQueries - used) };
+      }
+      lastNow = nowMs;
       if (windowStart === null || nowMs - windowStart >= windowMs) {
         windowStart = nowMs;
         used = 0;
       }
-      if (used >= maxQueries) return { allowed: false, used, remaining: 0 };
+      if (used >= maxQueries) return { allowed: false, reason: 'budget-exhausted', used, remaining: 0 };
       used += 1;
       return { allowed: true, used, remaining: maxQueries - used };
     },

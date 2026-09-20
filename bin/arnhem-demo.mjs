@@ -26,24 +26,21 @@ const MODE = { CALM: 'CALM', SOCIAL: 'SOCIAL' };
 
 function computeSignals({ place, registry, manifestsById, nowMs, invert }) {
   const profile = PROFILE.COMMERCIAL_SAFE;
-  const crowd = crowdIndex({
-    observations: filterByProfile(place.crowd, registry, profile).kept,
-    manifestsById,
-    nowMs,
-  });
+  const crowdFilter = filterByProfile(place.crowd, registry, profile);
+  const calmFilter = filterByProfile(place.calm, registry, profile);
+  const socialFilter = filterByProfile(place.social, registry, profile);
+  const excluded = [...new Set([...crowdFilter.excluded, ...calmFilter.excluded, ...socialFilter.excluded])];
+
+  const crowd = crowdIndex({ observations: crowdFilter.kept, manifestsById, nowMs });
   const calm = calmIndex({
     crowdEstimate: crowd.estimate,
-    calmObservations: filterByProfile(place.calm, registry, profile).kept,
+    calmObservations: calmFilter.kept,
     manifestsById,
     nowMs,
     invert,
   });
-  const social = socialOpportunity({
-    observations: filterByProfile(place.social, registry, profile).kept,
-    manifestsById,
-    nowMs,
-  });
-  return { crowd, calm, social };
+  const social = socialOpportunity({ observations: socialFilter.kept, manifestsById, nowMs });
+  return { crowd, calm, social, excluded };
 }
 
 function withForecast({ score, confidence }, priorsByHour, nowMs) {
@@ -60,6 +57,14 @@ function rank(places, mode) {
   });
 }
 
+function contributingSources(registry, signals) {
+  const ids = new Set();
+  for (const name of ['crowd', 'calm', 'social']) {
+    for (const contribution of signals[name].contributions ?? []) ids.add(contribution.sourceId);
+  }
+  return registry.all().filter((manifest) => ids.has(manifest.id));
+}
+
 function main() {
   const fixture = createArnhemFixture(FIXED_NOW);
   const { registry, manifestsById, nowMs, priorsByHour, calmInvert } = fixture;
@@ -68,6 +73,7 @@ function main() {
     const signals = computeSignals({ place, registry, manifestsById, nowMs, invert: calmInvert });
     return {
       place,
+      excluded: signals.excluded,
       signals: {
         crowd: {
           estimate: signals.crowd.estimate,
@@ -95,7 +101,7 @@ function main() {
   lines.push('');
 
   for (const evaluatedPlace of evaluated) {
-    const { place, signals } = evaluatedPlace;
+    const { place, signals, excluded } = evaluatedPlace;
     lines.push(`${place.name}`);
     for (const name of ['crowd', 'calm', 'social']) {
       const estimate = signals[name].estimate;
@@ -110,7 +116,8 @@ function main() {
     const brief = buildPlaceBrief({
       place,
       signals,
-      sources: registry.all(),
+      sources: contributingSources(registry, signals),
+      excludedSources: excluded.map((id) => ({ id, reason: `excluded by ${PROFILE.COMMERCIAL_SAFE} licence profile` })),
       generatedAtMs: nowMs,
       methodologyVersion: 'm0.1',
       commercialProfile: PROFILE.COMMERCIAL_SAFE,

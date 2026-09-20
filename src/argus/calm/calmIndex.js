@@ -1,6 +1,6 @@
 import { fuse } from '../fusion/fuse.js';
-import { createEstimate } from '../evidence/evidence.js';
-import { bandFor } from '../confidence/confidence.js';
+import { createEstimate, createEvidenceRecord } from '../evidence/evidence.js';
+import { bandFor, CONFIDENCE_STATE } from '../confidence/confidence.js';
 
 /**
  * Calm Index: estimated environmental/social calm, 0..100.
@@ -8,10 +8,12 @@ import { bandFor } from '../confidence/confidence.js';
  * Calm is not the inverse of crowd. A busy park can be calm while a cramped
  * restaurant beside heavy traffic is not. Calm blends:
  *   - inverted crowd pressure (55%)
- *   - environmental evidence (greenery positive, noise/traffic negative) (45%)
+ *   - environmental evidence (greenery positive, noise negative) (45%)
  *
- * When environmental evidence is missing, calm falls back to crowd pressure
- * but its confidence is capped, because the calm signal is then incomplete.
+ * The crowd component is recorded as an explicit derived EvidenceRecord, so the
+ * final number is traceable from its own evidence list, not only through a
+ * pointer to another estimate. When environmental evidence is missing, calm
+ * falls back to crowd pressure but its confidence is capped.
  */
 export function calmIndex({
   crowdEstimate,
@@ -56,7 +58,29 @@ export function calmIndex({
     confidence = environmental?.confidence.value ?? 0;
   }
 
-  const evidence = environmental ? environmental.evidence : [];
+  const evidence = [];
+  if (crowdPressure !== null) {
+    evidence.push(
+      createEvidenceRecord({
+        observation: { id: crowdEstimate.id, sourceId: 'derived:crowd-pressure' },
+        manifestId: 'derived:crowd-pressure',
+        normalized: crowdPressure,
+        weight: 0.55,
+        freshness: 'STATIC',
+        included: true,
+        reason: 'derived-from-crowd-estimate',
+      }),
+    );
+  }
+  if (environmental) evidence.push(...environmental.evidence);
+
+  const states = [crowdEstimate.confidenceState, environmental?.estimate.confidenceState].filter(Boolean);
+  let confidenceState;
+  if (states.includes(CONFIDENCE_STATE.CONTRADICTED)) confidenceState = CONFIDENCE_STATE.CONTRADICTED;
+  else if (confidence >= 0.8 && envScore !== null && crowdPressure !== null) confidenceState = CONFIDENCE_STATE.VERIFIED;
+  else if (confidence >= 0.5) confidenceState = CONFIDENCE_STATE.SUPPORTED;
+  else confidenceState = CONFIDENCE_STATE.INFERRED;
+
   const range = score === null
     ? null
     : {
@@ -70,6 +94,7 @@ export function calmIndex({
     band: score === null ? 'UNAVAILABLE' : bandFor(score),
     range,
     confidence,
+    confidenceState,
     evidence,
     computedAtMs: nowMs,
     methodologyVersion,
@@ -78,5 +103,11 @@ export function calmIndex({
     derivedFromEstimateIds: [crowdEstimate.id, ...(environmental ? [environmental.estimate.id] : [])],
   });
 
-  return { estimate, environmental, confidence, contributions: environmental?.contributions ?? [] };
+  return {
+    estimate,
+    environmental,
+    confidence,
+    contributions: environmental?.contributions ?? [],
+    evidence,
+  };
 }

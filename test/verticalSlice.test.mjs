@@ -58,6 +58,18 @@ test('every estimate resolves back to declared sources', () => {
   }
 });
 
+test('calm exposes its own evidence, including the derived crowd component', () => {
+  const fixture = createArnhemFixture(NOW);
+  const [burger] = fixture.places.map((p) => computeFor(p, fixture));
+  assert.ok(Array.isArray(burger.calm.evidence) && burger.calm.evidence.length > 0);
+  const sources = traceSources(burger.calm.estimate, burger.calm.evidence);
+  assert.ok(sources.includes('derived:crowd-pressure'));
+  for (const id of sources) {
+    if (id === 'derived:crowd-pressure') continue;
+    assert.ok(fixture.registry.get(id), `unknown source ${id}`);
+  }
+});
+
 test('calm is not a simple inverse of crowd', () => {
   const fixture = createArnhemFixture(NOW);
   const [burger, park] = fixture.places.map((p) => computeFor(p, fixture));
@@ -94,6 +106,7 @@ test('the place brief is traceable and states its limits and method', () => {
     place,
     signals: { crowd: asSignal(result.crowd), calm: asSignal(result.calm), social: asSignal(result.social) },
     sources: fixture.registry.all(),
+    excludedSources: [{ id: 'arnhem-events', reason: 'excluded by COMMERCIAL_SAFE licence profile' }],
     generatedAtMs: NOW,
     methodologyVersion: 'm0.1',
     commercialProfile: PROFILE.COMMERCIAL_SAFE,
@@ -104,6 +117,9 @@ test('the place brief is traceable and states its limits and method', () => {
   assert.equal(brief.json.methodologyVersion, 'm0.1');
   assert.equal(brief.json.sources.length, fixture.registry.size());
   assert.ok(brief.json.limitations.length > 0);
+  assert.equal(brief.json.excludedSources[0].id, 'arnhem-events');
+  assert.match(brief.html, /Excluded by licence profile/);
+  assert.match(brief.html, /arnhem-events/);
   assert.match(brief.html, /Eye of Argus/);
   assert.match(brief.html, /m0\.1/);
   assert.match(brief.html, /synthetic fixture only/);

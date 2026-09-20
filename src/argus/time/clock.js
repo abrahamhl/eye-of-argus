@@ -4,6 +4,11 @@
  */
 
 export function createClock(fixedIso) {
+  // Require an explicit timezone (Z or +hh:mm/-hh:mm) so the pinned instant is
+  // identical on every machine; a bare local timestamp is machine-dependent.
+  if (fixedIso && !/(Z|[+-]\d{2}:\d{2})$/.test(fixedIso)) {
+    throw new Error(`createClock: "${fixedIso}" must include a timezone (Z or ±hh:mm)`);
+  }
   const fixedMs = fixedIso ? Date.parse(fixedIso) : null;
   if (fixedIso && Number.isNaN(fixedMs)) {
     throw new Error(`createClock: invalid ISO timestamp ${fixedIso}`);

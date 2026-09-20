@@ -16,11 +16,12 @@ test('a cell below the k threshold is suppressed and exposes no value', () => {
   assert.equal('value' in result, false);
 });
 
-test('a cell at or above k is released with a band, never an identity list', () => {
+test('a cell at or above k is released with a band, never a count or identity list', () => {
   const result = suppressCell({ count: 30 });
   assert.equal(result.suppressed, false);
   assert.equal(result.state, CELL_STATE.RELEASED);
   assert.equal(result.band, 'MODERATE');
+  assert.equal('value' in result, false, 'released cells must not expose the exact count');
   assert.equal('identities' in result, false);
 });
 
@@ -52,4 +53,12 @@ test('privacy budget degrades gracefully instead of overspending', () => {
   assert.equal(budget.consume(100).allowed, true);
   assert.equal(budget.consume(200).allowed, false);
   assert.equal(budget.consume(2000).allowed, true);
+});
+
+test('privacy budget rejects a non-monotonic clock instead of being reset by it', () => {
+  const budget = createPrivacyBudget({ windowMs: 100, maxQueries: 5 });
+  assert.equal(budget.consume(1000).allowed, true);
+  const rewound = budget.consume(10);
+  assert.equal(rewound.allowed, false);
+  assert.equal(rewound.reason, 'non-monotonic-clock');
 });

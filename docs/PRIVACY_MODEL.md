@@ -23,7 +23,10 @@ If opt-in telemetry is ever enabled, only aggregates leave a device:
 - released cells expose a **band** (`LOW/MODERATE/HIGH/VERY HIGH`), not a count;
 - `aggregateSpatialGrid` merges raw cells into a coarse grid, then suppresses;
 - `createPrivacyBudget` bounds live lookups per window and degrades to offline
-  mode instead of overspending.
+  mode instead of overspending. It rejects non-monotonic (rewound) time so a
+  caller cannot reset the window by moving the clock backwards. It is
+  **per-process and in-memory**: restarting the process resets it, and it is a
+  guard, not a billing cap. Persisted budgets are a future story.
 
 ## Tradeoffs (documented, not hidden)
 

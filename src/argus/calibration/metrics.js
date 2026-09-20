@@ -5,9 +5,13 @@
  */
 
 export function bandAccuracy(pairs) {
-  if (!Array.isArray(pairs) || pairs.length === 0) return null;
-  const correct = pairs.filter((p) => p.predictedBand === p.truthBand).length;
-  return Number((correct / pairs.length).toFixed(4));
+  const valid = (pairs ?? []).filter(
+    (p) => typeof p.predictedBand === 'string' && p.predictedBand !== ''
+      && typeof p.truthBand === 'string' && p.truthBand !== '',
+  );
+  if (valid.length === 0) return null;
+  const correct = valid.filter((p) => p.predictedBand === p.truthBand).length;
+  return Number((correct / valid.length).toFixed(4));
 }
 
 export function meanAbsoluteError(pairs) {

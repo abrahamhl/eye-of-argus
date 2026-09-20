@@ -27,11 +27,21 @@ export function classifyFreshness({ kind, observedAtMs, nowMs, policy } = {}) {
   if (kind === 'inferred') return FRESHNESS.INFERRED;
   if (kind === 'static') return FRESHNESS.STATIC;
   if (!Number.isFinite(observedAtMs)) return FRESHNESS.UNAVAILABLE;
+  if (!Number.isFinite(nowMs)) return FRESHNESS.UNAVAILABLE;
 
   const { liveWithinSeconds, cachedWithinSeconds } = {
     ...DEFAULT_FRESHNESS_POLICY,
     ...(policy || {}),
   };
+  if (
+    !(liveWithinSeconds > 0) ||
+    !(cachedWithinSeconds > 0) ||
+    liveWithinSeconds > cachedWithinSeconds
+  ) {
+    throw new Error(
+      `freshness policy invalid: need 0 < liveWithinSeconds (${liveWithinSeconds}) <= cachedWithinSeconds (${cachedWithinSeconds})`,
+    );
+  }
 
   const ageSeconds = (nowMs - observedAtMs) / 1000;
   if (ageSeconds < 0) {

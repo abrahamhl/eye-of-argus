@@ -36,6 +36,15 @@ test('OPEN_SOURCE excludes a non-commercial licence even if redistribution is al
   assert.equal(isAllowed(nc, PROFILE.OPEN_SOURCE), false);
 });
 
+test('a non-commercial licence string blocks COMMERCIAL_SAFE even if commercialUse is true', () => {
+  const sneaky = mkManifest({ id: 'sneaky', license: 'CC-BY-NC-4.0', commercialUse: true, redistribution: 'allowed' });
+  assert.equal(isAllowed(sneaky, PROFILE.COMMERCIAL_SAFE), false);
+});
+
+test('licence matching is case-insensitive', () => {
+  assert.equal(isAllowed(mkManifest({ id: 'lower', license: 'mit' }), PROFILE.OPEN_SOURCE), true);
+});
+
 test('filterByProfile keeps allowed observations and reports exclusions', () => {
   const registry = createRegistry([
     mkManifest({ id: 'ok' }),

@@ -13,6 +13,10 @@ export function createEvidenceRecord({
   freshness,
   included = true,
   reason = 'included',
+  rawValue = null,
+  domain = null,
+  invert = false,
+  outlierCutoff = null,
 }) {
   const body = {
     observationId: observation.id,
@@ -23,6 +27,10 @@ export function createEvidenceRecord({
     freshness,
     included,
     reason,
+    rawValue,
+    domain,
+    invert,
+    outlierCutoff,
   };
   return Object.freeze({ ...body, id: `ev_${hashOf(body).slice(0, 16)}` });
 }
@@ -33,6 +41,7 @@ export function createEstimate({
   band,
   range,
   confidence,
+  confidenceState = 'UNKNOWN',
   evidence,
   computedAtMs,
   methodologyVersion,
@@ -45,7 +54,9 @@ export function createEstimate({
     signal,
     score,
     band,
+    range,
     confidence,
+    confidenceState,
     evidenceIds,
     derivedFromEstimateIds,
     methodologyVersion,
@@ -54,7 +65,6 @@ export function createEstimate({
   };
   return Object.freeze({
     ...body,
-    range,
     computedAtMs,
     id: `est_${hashOf(body).slice(0, 16)}`,
   });

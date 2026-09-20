@@ -8,23 +8,15 @@ export const CONFIDENCE_STATE = Object.freeze({
   CONTRADICTED: 'CONTRADICTED',
 });
 
-function mean(values) {
-  if (values.length === 0) return 0;
-  return values.reduce((a, b) => a + b, 0) / values.length;
-}
-
 /**
- * Confidence is derived from evidence quality only. It is never a function of
- * the crowd score, so a strong crowd reading can still be uncertain.
+ * Confidence is derived from evidence quality only.
  *
- * Inputs:
- *  - observations: normalized observations carrying sourceId, value, kind
- *  - manifestsById: sourceId -> SourceManifest
- *
- * Outputs a 0..1 number plus a discrete state. All-inferred evidence is capped
- * below VERIFIED by construction.
+ * Dispersion is measured as the *range* of the contributing values relative to
+ * a scale (default 100, the index domain), so it is scale-free and does not
+ * reward large magnitudes or punish small ones. This keeps confidence
+ * independent of the score's magnitude, as documented.
  */
-export function computeConfidence({ observations, manifestsById, nowMs }) {
+export function computeConfidence({ observations, manifestsById, nowMs, scale = 100 }) {
   if (!observations || observations.length === 0) {
     return { value: 0, state: CONFIDENCE_STATE.UNKNOWN, contributors: 0, providers: 0, dispersion: 1 };
   }
@@ -52,14 +44,13 @@ export function computeConfidence({ observations, manifestsById, nowMs }) {
   }
 
   const values = active.map((s) => s.observation.value);
-  const average = mean(values);
-  const mad = mean(values.map((v) => Math.abs(v - average)));
-  const dispersion = average > 0 ? Math.min(1, mad / average) : 1;
+  const spread = Math.max(...values) - Math.min(...values);
+  const dispersion = active.length > 1 ? Math.min(1, spread / scale) : 0;
+  const agreement = 1 - dispersion;
 
   const bestWeight = Math.max(...active.map((s) => s.weight));
   const providers = new Set(active.map((s) => s.manifest.provider)).size;
   const coverage = Math.min(1, providers / 3);
-  const agreement = 1 - dispersion;
 
   const value = Math.max(0, Math.min(1, 0.55 * bestWeight + 0.15 * coverage + 0.3 * agreement));
 

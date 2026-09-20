@@ -30,8 +30,19 @@ provider coverage, agreement). It is never a function of the crowd score.
 States: `VERIFIED · SUPPORTED · INFERRED · UNKNOWN · CONTRADICTED`.
 
 - All-inferred evidence is capped below `VERIFIED` (`computeConfidence`).
-- High dispersion between sources yields `CONTRADICTED`.
+- Dispersion is the **range** of contributing values relative to the 0..100
+  scale (scale-free), so equal absolute disagreement yields equal confidence at
+  low and high magnitude. A spread above 60 points yields `CONTRADICTED`.
 - AI/adapter output may not set `confidence` to promote an inferred observation.
+- A `CONTRADICTED` estimate keeps its band but is visually downgraded and the
+  brief states the sources disagree.
+
+## Calm traceability
+
+`calmIndex()` records the crowd component as an explicit
+`derived:crowd-pressure` EvidenceRecord and exposes `evidence` on its result, so
+the Calm number is recomputable from its own evidence list rather than only
+through a pointer to the crowd estimate.
 
 ## Reproducibility metadata
 

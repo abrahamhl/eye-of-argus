@@ -41,7 +41,7 @@
     { "id": "S27", "title": "Calibration fixture framework", "status": "done", "artifact": "src/argus/calibration/metrics.js + bin/calibrate.mjs" },
     { "id": "S28", "title": "Performance audit (headless core)", "status": "done", "artifact": "test/perf.test.mjs", "note": "visual audit still deferred until UI integration" },
     { "id": "S29", "title": "README/case study", "status": "done", "artifact": "docs/CASE_STUDY.md" },
-    { "id": "S30", "title": "Adversarial product/engineering review", "status": "todo" }
+    { "id": "S30", "title": "Adversarial product/engineering review", "status": "done", "artifact": ".autonomy/ERRORS.md", "note": "13 findings; critical/high fixed; residual items listed" }
   ],
   "nextStories": ["S03", "S27", "S28", "S30", "S29", "S19"]
 }

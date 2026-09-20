@@ -9,26 +9,46 @@ export const PROFILE = Object.freeze({
 
 /** Licences treated as OSI/permissive enough for the open-source profile. */
 const OPEN_LICENSES = new Set([
-  'MIT',
-  'Apache-2.0',
-  'BSD-3-Clause',
-  'CC0-1.0',
-  'CC-BY-4.0',
-  'PDDL-1.0',
-  'ODbL-1.0',
-  'OGL-2.0',
+  'mit',
+  'apache-2.0',
+  'bsd-3-clause',
+  'cc0-1.0',
+  'cc-by-4.0',
+  'pddl-1.0',
+  'odbl-1.0',
+  'ogl-2.0',
 ]);
 
+/**
+ * A licence string that signals non-commercial or no-derivatives terms must
+ * block COMMERCIAL_SAFE even if the manifest's commercialUse flag is wrong.
+ * Never trust a single hand-typed boolean.
+ */
+const NON_COMMERCIAL_PATTERNS = [
+  /non-?commercial/i,
+  /(^|[^a-z])nc([^a-z]|$)/i,
+  /(^|[^a-z])nd([^a-z]|$)/i,
+];
+
+export function isNonCommercialLicense(license) {
+  return NON_COMMERCIAL_PATTERNS.some((pattern) => pattern.test(String(license)));
+}
+
 export function isAllowed(manifest, profile) {
+  const license = String(manifest.license).toLowerCase();
   switch (profile) {
     case PROFILE.PERSONAL:
       return true;
     case PROFILE.RESEARCH:
       return manifest.redistribution !== 'prohibited';
     case PROFILE.OPEN_SOURCE:
-      return OPEN_LICENSES.has(manifest.license) || manifest.license === 'custom-permissive';
+      return OPEN_LICENSES.has(license) || license === 'custom-permissive';
     case PROFILE.COMMERCIAL_SAFE:
-      return manifest.commercialUse === true && manifest.redistribution !== 'prohibited';
+      return (
+        manifest.commercialUse === true &&
+        manifest.redistribution !== 'prohibited' &&
+        !isNonCommercialLicense(license)
+      );
     default:
       throw new Error(`unknown licence profile "${profile}"`);
   }

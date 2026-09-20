@@ -8,6 +8,7 @@ test('normalizeValue maps a declared domain to 0..100', () => {
   assert.equal(normalizeValue(0, { min: 0, max: 200 }), 0);
   assert.equal(normalizeValue(200, { min: 0, max: 200 }), 100);
   assert.equal(normalizeValue(80, undefined), 80);
+  assert.equal(normalizeValue(80, undefined, true), 20);
   assert.equal(normalizeValue(80, { min: 0, max: 100 }, true), 20);
 });
 
@@ -42,6 +43,40 @@ test('an outlier is demoted but kept in the audit trail', () => {
   assert.equal(demoted.length, 1);
   assert.equal(demoted[0].included, false);
   assert.ok(result.estimate.score < 50, 'outlier must not drag the score up');
+});
+
+test('outlier rejection still works when the majority agree exactly (zero MAD)', () => {
+  const manifests = [
+    mkManifest({ id: 'a', provider: 'A' }),
+    mkManifest({ id: 'b', provider: 'B' }),
+    mkManifest({ id: 'c', provider: 'C' }),
+    mkManifest({ id: 'd', provider: 'D' }),
+  ];
+  const result = fuse({
+    signal: 'crowd',
+    observations: [
+      mkObs({ sourceId: 'a', value: 50 }),
+      mkObs({ sourceId: 'b', value: 50 }),
+      mkObs({ sourceId: 'c', value: 50 }),
+      mkObs({ sourceId: 'd', value: 99 }),
+    ],
+    manifestsById: manifestsById(...manifests),
+    nowMs: NOW,
+  });
+  assert.equal(result.estimate.score, 50);
+  assert.equal(result.evidence.filter((e) => e.reason === 'outlier-demoted').length, 1);
+});
+
+test('an invert flag without a domain is honoured (noise must lower calm)', () => {
+  const manifests = [mkManifest({ id: 'noise', provider: 'Noise' })];
+  const result = fuse({
+    signal: 'calm-environment',
+    observations: [mkObs({ sourceId: 'noise', value: 80 })],
+    manifestsById: manifestsById(...manifests),
+    nowMs: NOW,
+    invert: { noise: true },
+  });
+  assert.equal(result.estimate.score, 20);
 });
 
 test('all-unavailable evidence yields an UNAVAILABLE estimate, not a fake number', () => {

@@ -40,6 +40,37 @@ test('contradictory live evidence is flagged CONTRADICTED', () => {
   assert.equal(result.state, CONFIDENCE_STATE.CONTRADICTED);
 });
 
+test('small absolute disagreement is not CONTRADICTED', () => {
+  const manifests = [mkManifest({ id: 'a', provider: 'A' }), mkManifest({ id: 'b', provider: 'B' })];
+  const observations = [mkObs({ sourceId: 'a', value: 0 }), mkObs({ sourceId: 'b', value: 2 })];
+  const result = computeConfidence({ observations, manifestsById: manifestsById(...manifests), nowMs: NOW });
+  assert.notEqual(result.state, CONFIDENCE_STATE.CONTRADICTED);
+});
+
+test('identical zero readings are agreement, not contradiction', () => {
+  const manifests = [mkManifest({ id: 'a', provider: 'A' }), mkManifest({ id: 'b', provider: 'B' })];
+  const observations = [mkObs({ sourceId: 'a', value: 0 }), mkObs({ sourceId: 'b', value: 0 })];
+  const result = computeConfidence({ observations, manifestsById: manifestsById(...manifests), nowMs: NOW });
+  assert.equal(result.dispersion, 0);
+  assert.notEqual(result.state, CONFIDENCE_STATE.CONTRADICTED);
+});
+
+test('the same absolute spread yields the same confidence at low and high magnitude', () => {
+  const manifests = [mkManifest({ id: 'a', provider: 'A' }), mkManifest({ id: 'b', provider: 'B' })];
+  const low = computeConfidence({
+    observations: [mkObs({ sourceId: 'a', value: 10 }), mkObs({ sourceId: 'b', value: 12 })],
+    manifestsById: manifestsById(...manifests),
+    nowMs: NOW,
+  });
+  const high = computeConfidence({
+    observations: [mkObs({ sourceId: 'a', value: 90 }), mkObs({ sourceId: 'b', value: 92 })],
+    manifestsById: manifestsById(...manifests),
+    nowMs: NOW,
+  });
+  assert.equal(low.dispersion, high.dispersion);
+  assert.equal(low.value, high.value);
+});
+
 test('agreeing live sources from several providers can reach VERIFIED', () => {
   const manifests = [
     mkManifest({ id: 'a', provider: 'A', confidencePrior: 0.9 }),

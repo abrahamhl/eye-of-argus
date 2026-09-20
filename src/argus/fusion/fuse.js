@@ -11,31 +11,36 @@ function median(values) {
 
 /**
  * Normalize a raw observation to 0..100 using the source's declared domain.
- * Sources without an explicit domain are assumed already 0..100.
+ * `invert` is honoured with or without a domain (a high noise reading must
+ * lower calm even when the source is already on a 0..100 index).
  */
 export function normalizeValue(value, domain, invert = false) {
   const clean = (n) => Math.round(n * 1e6) / 1e6;
-  if (!domain) return clean(Math.max(0, Math.min(100, value)));
+  if (!domain) {
+    const clamped = Math.max(0, Math.min(100, value));
+    return clean(invert ? 100 - clamped : clamped);
+  }
   const { min, max } = domain;
   const span = max - min;
   if (span <= 0) return 50;
   let ratio = (value - min) / span;
   ratio = Math.max(0, Math.min(1, ratio));
-  const scaled = invert ? 1 - ratio : ratio;
-  return clean(scaled * 100);
+  const scaled = ratio * 100;
+  return clean(invert ? 100 - scaled : scaled);
 }
+
+const OUTLIER_FLOOR = 15;
 
 /**
  * Evidence fusion.
  *
- * - each observation is normalized to 0..100
- * - weight = source confidencePrior x freshness weight
- * - a median/MAD filter demotes (never deletes) outliers; demoted points keep
- *   an evidence record with included=false so the audit stays complete
- * - the score is the weight-weighted mean of the included points
+ * - observations are processed in id order so accumulation is deterministic
+ * - each is normalized to 0..100 and weighted by prior x freshness
+ * - a median/MAD filter demotes (never deletes) outliers, with an absolute
+ *   floor so a zero-MAD sample cannot disable outlier rejection
+ * - fewer than three observations are never outlier-rejected (no consensus)
+ * - demoted points keep a full evidence record so the audit stays complete
  * - the range widens with disagreement and low confidence
- *
- * No scoring logic lives in any UI component.
  */
 export function fuse({
   signal,
@@ -56,6 +61,7 @@ export function fuse({
       band: 'UNAVAILABLE',
       range: null,
       confidence: confidence.value,
+      confidenceState: confidence.state,
       evidence: [],
       computedAtMs: nowMs,
       methodologyVersion,
@@ -65,7 +71,9 @@ export function fuse({
     return { estimate, evidence: [], contributions: [], confidence };
   }
 
-  const normalized = observations.map((observation) => {
+  const ordered = [...observations].sort((a, b) => a.id.localeCompare(b.id));
+
+  const normalized = ordered.map((observation) => {
     const manifest = manifestsById[observation.sourceId];
     if (!manifest) throw new Error(`fuse: no manifest for "${observation.sourceId}"`);
     const freshness = classifyFreshness({
@@ -80,14 +88,14 @@ export function fuse({
       freshness,
       weight: manifest.confidencePrior * freshnessWeight(freshness),
       normalizedValue: normalizeValue(observation.value, domains[observation.sourceId], invert[observation.sourceId]),
+      included: false,
     };
   });
 
   const active = normalized.filter((n) => n.weight > 0);
   const med = median(active.map((n) => n.normalizedValue));
-  const deviations = active.map((n) => Math.abs(n.normalizedValue - med));
-  const mad = median(deviations);
-  const outlierCutoff = mad > 0 ? 3 * mad : Infinity;
+  const mad = median(active.map((n) => Math.abs(n.normalizedValue - med)));
+  const outlierCutoff = active.length >= 3 ? Math.max(3 * mad, OUTLIER_FLOOR) : Infinity;
 
   let weightedSum = 0;
   let weightTotal = 0;
@@ -96,8 +104,10 @@ export function fuse({
 
   for (const entry of normalized) {
     const { observation, manifest, freshness, weight, normalizedValue } = entry;
-    const isOutlier = weight > 0 && Number.isFinite(outlierCutoff) && Math.abs(normalizedValue - med) > outlierCutoff;
+    const isOutlier = weight > 0 && Number.isFinite(outlierCutoff)
+      && Math.abs(normalizedValue - med) > outlierCutoff;
     const included = weight > 0 && !isOutlier;
+    entry.included = included;
     const reason = weight === 0 ? 'unavailable' : isOutlier ? 'outlier-demoted' : 'included';
 
     evidence.push(
@@ -109,6 +119,10 @@ export function fuse({
         freshness,
         included,
         reason,
+        rawValue: observation.value,
+        domain: domains[observation.sourceId] ?? null,
+        invert: Boolean(invert[observation.sourceId]),
+        outlierCutoff: Number.isFinite(outlierCutoff) ? outlierCutoff : null,
       }),
     );
 
@@ -136,18 +150,17 @@ export function fuse({
   }
 
   const score = weightTotal > 0 ? weightedSum / weightTotal : null;
-  const includedObservations = normalized.filter((n) => n.weight > 0 && !(Number.isFinite(outlierCutoff) && Math.abs(n.normalizedValue - med) > outlierCutoff));
   const confidence = computeConfidence({
-    observations: includedObservations.map((n) => n.observation),
+    observations: normalized.filter((n) => n.included).map((n) => n.observation),
     manifestsById,
     nowMs,
   });
 
   let range = null;
   if (score !== null) {
-    const spread = includedObservations.length > 1
-      ? meanAbsoluteDeviation(includedObservations.map((n) => n.normalizedValue))
-      : 0;
+    const spread = meanAbsoluteDeviation(
+      normalized.filter((n) => n.included).map((n) => n.normalizedValue),
+    );
     const halfWidth = Math.round(4 + (1 - confidence.value) * 24 + spread * 0.5);
     range = {
       low: Math.max(0, Math.round(score - halfWidth)),
@@ -161,6 +174,7 @@ export function fuse({
     band: score === null ? 'UNAVAILABLE' : bandFor(score),
     range,
     confidence: confidence.value,
+    confidenceState: confidence.state,
     evidence,
     computedAtMs: nowMs,
     methodologyVersion,
@@ -172,6 +186,7 @@ export function fuse({
 }
 
 function meanAbsoluteDeviation(values) {
+  if (values.length === 0) return 0;
   const avg = values.reduce((a, b) => a + b, 0) / values.length;
   return values.reduce((a, b) => a + Math.abs(b - avg), 0) / values.length;
 }

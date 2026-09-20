@@ -28,14 +28,15 @@ explicit estimates:
 
 ## Result (measured, reproducible)
 
-- Headless core with **43/43 deterministic tests** (`node --test test/*.test.mjs`),
+- Headless core with **65/65 deterministic tests** (`node --test test/*.test.mjs`),
   no network required.
 - Arnhem slice: Burger King Centrum → Crowd **HIGH 73.0** (range 63–83),
-  Calm **MODERATE 34.8**; Park Sonsbeek → Crowd **MODERATE 38.1**,
-  Calm **HIGH 60.2**. The busy park is the calmer place — Calm is deliberately
-  not the inverse of Crowd.
+  Calm **LOW 22.0**; Park Sonsbeek → Crowd **MODERATE 38.1**,
+  Calm **HIGH 70.9**. The busy park is the calmer place — Calm is deliberately
+  not the inverse of Crowd, and a high noise reading lowers Calm.
 - CALM mode ranks the park first; SOCIAL mode ranks the Burger King first —
-  same evidence model, different preference weights.
+  the same evidence model, with the mode simply choosing which measure ranks
+  the destinations (no hidden weighting).
 - Forecast at NOW/+15/+30/+60 with uncertainty that widens and confidence that
   decays; forecasts are not silently treated as observations.
 

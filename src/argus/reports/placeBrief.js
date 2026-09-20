@@ -10,23 +10,37 @@ function escapeHtml(value) {
   }[char]));
 }
 
-function honestyClass({ band, confidence, freshness }) {
+const FRESHNESS_SEVERITY = ['LIVE', 'STATIC', 'CACHED', 'INFERRED', 'STALE', 'UNAVAILABLE'];
+
+function representativeFreshness(contributions) {
+  let worst = 'LIVE';
+  for (const c of contributions) {
+    if (!c.included) continue;
+    if (FRESHNESS_SEVERITY.indexOf(c.freshness) > FRESHNESS_SEVERITY.indexOf(worst)) worst = c.freshness;
+  }
+  return worst;
+}
+
+function honestyClass({ band, confidence, state, freshness }) {
+  if (state === 'CONTRADICTED' || state === 'UNKNOWN') return 'unknown';
   if (freshness === 'STALE') return 'stale';
   if (freshness === 'UNAVAILABLE') return 'unknown';
   if ((confidence ?? 0) < 0.4) return 'low-confidence';
-  if (band === 'VERY HIGH' || band === 'HIGH') return 'solid';
+  if (band === 'HIGH' || band === 'VERY HIGH') return 'solid';
   return 'inferred';
 }
 
 /**
  * A brief is traceable by construction: it carries the run metadata, the
- * per-source contribution table (value, weight, freshness, licence) and the
- * limitations, and it refuses to round an uncertain estimate into a count.
+ * per-source contribution table (value, weight, freshness, licence), the
+ * sources excluded by the active licence profile, and the limitations. It
+ * refuses to round an uncertain estimate into a count.
  */
 export function buildPlaceBrief({
   place,
   signals,
   sources,
+  excludedSources = [],
   generatedAtMs,
   methodologyVersion,
   commercialProfile,
@@ -56,16 +70,22 @@ export function buildPlaceBrief({
     configurationHash,
     signals: signalRows,
     sources,
+    excludedSources,
     limitations,
   };
 
-  const html = renderHtml({ place, mode, commercialProfile, generatedAtMs, methodologyVersion, runId, configurationHash, signalRows, sourceIndex, limitations });
+  const html = renderHtml({ place, mode, commercialProfile, generatedAtMs, methodologyVersion, runId, configurationHash, signalRows, sourceIndex, excludedSources, limitations });
   return { json, html };
 }
 
 function renderSignal(name, signalRow, sourceIndex) {
   const { estimate, forecast } = signalRow;
-  const cls = honestyClass({ band: estimate.band, confidence: estimate.confidence });
+  const cls = honestyClass({
+    band: estimate.band,
+    confidence: estimate.confidence,
+    state: estimate.confidenceState,
+    freshness: representativeFreshness(signalRow.contributions),
+  });
   const scoreText = estimate.score === null
     ? 'UNAVAILABLE'
     : `${estimate.score} <span class="range">(${estimate.range.low}–${estimate.range.high})</span>`;
@@ -83,7 +103,7 @@ function renderSignal(name, signalRow, sourceIndex) {
 
   return `
   <section class="signal ${cls}">
-    <h3>${escapeHtml(name)} — ${escapeHtml(estimate.band)}</h3>
+    <h3>${escapeHtml(name)} — ${escapeHtml(estimate.band)} <span class="state">${escapeHtml(estimate.confidenceState ?? '')}</span></h3>
     <p class="score">${scoreText} <span class="conf">confidence ${estimate.confidence}</span></p>
     <table>
       <thead><tr><th>Horizon</th><th>Estimate</th><th>Band</th><th>Confidence</th></tr></thead>
@@ -99,7 +119,10 @@ function renderSignal(name, signalRow, sourceIndex) {
   </section>`;
 }
 
-function renderHtml({ place, mode, commercialProfile, generatedAtMs, methodologyVersion, runId, configurationHash, signalRows, sourceIndex, limitations }) {
+function renderHtml({ place, mode, commercialProfile, generatedAtMs, methodologyVersion, runId, configurationHash, signalRows, sourceIndex, excludedSources, limitations }) {
+  const excluded = excludedSources.length
+    ? `<section><h3>Excluded by licence profile (${escapeHtml(commercialProfile)})</h3><ul>${excludedSources.map((e) => `<li>${escapeHtml(e.id)} — ${escapeHtml(e.reason)}</li>`).join('')}</ul></section>`
+    : '';
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -111,7 +134,7 @@ function renderHtml({ place, mode, commercialProfile, generatedAtMs, methodology
   h1,h2,h3 { color:#eaf2ff; }
   table { border-collapse: collapse; width:100%; margin:0.5rem 0 1rem; }
   th,td { border:1px solid #24303d; padding:4px 8px; text-align:left; }
-  .range,.conf { color:#8aa0b4; font-weight:normal; }
+  .range,.conf,.state { color:#8aa0b4; font-weight:normal; }
   .signal { border:1px solid #24303d; border-radius:8px; padding:0 1rem 1rem; margin:1rem 0; }
   .signal.solid { border-left:6px solid #4ade80; }
   .signal.inferred { border-left:6px dashed #facc15; }
@@ -137,10 +160,12 @@ function renderHtml({ place, mode, commercialProfile, generatedAtMs, methodology
 </p>
 <p class="privacy">Offline-first: every figure above is an estimate with a range and a confidence, not a person count.
 Cells with fewer than K contributors are withheld. No device identifiers are processed. Freshness is shown per source;
-cached or inferred data is never presented as live.</p>
+cached or inferred data is never presented as live. A CONTRADICTED confidence state means the sources disagree and the
+band must not be read as settled.</p>
 ${signalRows.map((row) => renderSignal(row.name, row, sourceIndex)).join('\n')}
+${excluded}
 <section>
-  <h3>Sources</h3>
+  <h3>Contributing sources</h3>
   <table>
     <thead><tr><th>Source</th><th>Provider</th><th>Licence</th><th>Commercial</th><th>Redistribution</th><th>Privacy class</th><th>Terms</th></tr></thead>
     <tbody>

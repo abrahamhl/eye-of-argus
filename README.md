@@ -38,7 +38,7 @@ fabricated.
 
 ```bash
 node bin/arnhem-demo.mjs      # first vertical slice: Arnhem, synthetic
-node --test test/*.test.mjs   # 43 deterministic tests, no network
+node --test test/*.test.mjs   # 65 deterministic tests, no network
 ```
 
 The demo prints Crowd/Calm/Social for two nearby destinations, forecasts

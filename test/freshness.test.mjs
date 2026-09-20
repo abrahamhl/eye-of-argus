@@ -40,3 +40,15 @@ test('freshness weights are ordered live > static > cached > inferred > stale', 
   assert.ok(w(FRESHNESS.INFERRED) > w(FRESHNESS.STALE));
   assert.equal(w(FRESHNESS.UNAVAILABLE), 0);
 });
+
+test('a missing or NaN now is UNAVAILABLE, never LIVE or STALE', () => {
+  assert.equal(classifyFreshness({ kind: 'observed', observedAtMs: now, nowMs: undefined }), FRESHNESS.UNAVAILABLE);
+  assert.equal(classifyFreshness({ kind: 'observed', observedAtMs: now, nowMs: NaN }), FRESHNESS.UNAVAILABLE);
+});
+
+test('an invalid freshness policy is rejected, not silently trusted', () => {
+  assert.throws(
+    () => classifyFreshness({ kind: 'observed', observedAtMs: now - 400_000, nowMs: now, policy: { liveWithinSeconds: 600, cachedWithinSeconds: 300 } }),
+    /freshness policy invalid/,
+  );
+});

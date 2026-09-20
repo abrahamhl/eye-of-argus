@@ -16,7 +16,7 @@ Phase: intelligence core scaffolded and tested; live adapters + UI pending.
   evidence chain, confidence states, robust fusion, crowd, calm, social,
   forecast, privacy suppression, place brief.
 - First vertical slice `bin/arnhem-demo.mjs` (two venues, now/+15/+30/+60, CALM vs SOCIAL ranking, briefs written to `out/`).
-- Deterministic tests: **51/51 pass** (`node --test test/*.test.mjs`).
+- Deterministic tests: **65/65 pass** (`node --test test/*.test.mjs`) after S30 fixes.
 - Docs: provenance, capability matrix, licensing matrix, source candidates, evidence model, privacy model, calibration gate, ROI backlog, case study.
 - Calibration metrics (`src/argus/calibration/metrics.js`) + CLI (`bin/calibrate.mjs`) that refuses to report on a synthetic fixture without `--allow-synthetic`.
 - Performance test: fusion of 1000 observations is deterministic and bounded (`test/perf.test.mjs`).
