@@ -345,6 +345,7 @@ function renderMetricDetail(lower, p, metric) {
   const s = p.signals[metric];
   lower.innerHTML = `
     <h2>${metric.toUpperCase()} · ${escapeHtml(p.name)}</h2>
+    <p class="explain">${escapeHtml((s.explain ?? {}).explanation ?? '')}</p>
     <div class="two">
       <div>
         <table>
@@ -377,19 +378,22 @@ function forecastCards(signal) {
 }
 
 function renderEvidence(lower, p) {
-  lower.innerHTML = `<h2>EVIDENCE DRILL-DOWN · ${escapeHtml(p.name)}</h2>
-    <p class="muted">Every contribution is listed, including demoted outliers. An estimate resolves to source manifests through hashed EvidenceRecords.</p>
-    ${evidenceTable(p.signals.crowd)}
-    ${evidenceTable(p.signals.calm)}
-    ${evidenceTable(p.signals.social)}`;
+  lower.innerHTML = `<h2>EVIDENCE INSPECTOR · ${escapeHtml(p.name)}</h2>
+    <p class="muted">Every contribution is listed, including demoted outliers. Effective weight = source prior × freshness × correlation damping. An estimate resolves to source manifests through hashed EvidenceRecords.</p>
+    ${inspectorBlock('CROWD', p.signals.crowd)}
+    ${inspectorBlock('CALM', p.signals.calm)}
+    ${inspectorBlock('SOCIAL', p.signals.social)}`;
 }
 
-function evidenceTable(signal) {
-  return `<table>
-    <thead><tr><th>Source</th><th>Provider</th><th>Raw</th><th>Norm</th><th>Weight</th><th>Freshness</th><th>Kind</th><th>Licence</th><th>Decision</th></tr></thead>
+function inspectorBlock(label, signal) {
+  const expl = signal.explain ?? {};
+  return `<h2 class="muted">${label}</h2>
+  <p class="explain">${escapeHtml(expl.explanation ?? '')}</p>
+  <table>
+    <thead><tr><th>Source</th><th>Provider</th><th>Raw</th><th>Norm</th><th>Base</th><th>Corr</th><th>Effective</th><th>Freshness</th><th>Kind</th><th>Licence</th><th>Decision</th></tr></thead>
     <tbody>${signal.contributions.map((c) => `
       <tr class="${c.included ? '' : 'demoted'}"><td>${escapeHtml(c.sourceId)}</td><td>${escapeHtml(c.provider)}</td>
-      <td>${c.rawValue}</td><td>${c.normalized}</td><td>${c.weight}</td>
+      <td>${c.rawValue}</td><td>${c.normalized}</td><td>${c.baseWeight ?? ''}</td><td>${c.correlationFactor ?? ''}</td><td>${c.weight}</td>
       <td><span class="tag ${c.freshness}">${c.freshness}</span></td><td>${c.kind}</td><td>${escapeHtml(c.license)}</td>
       <td>${escapeHtml(c.reason)}</td></tr>`).join('')}</tbody>
   </table>`;

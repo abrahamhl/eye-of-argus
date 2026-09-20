@@ -18,6 +18,7 @@ import { forecast } from '../src/argus/forecast/temporal.js';
 import { traceSources } from '../src/argus/evidence/evidence.js';
 import { aggregateSpatialGrid, suppressCell } from '../src/argus/privacy/suppression.js';
 import { METHODOLOGY_VERSION } from '../src/argus/config/methodology.js';
+import { explainEstimate } from '../src/argus/evidence/explain.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = join(HERE, '..', 'site');
@@ -72,6 +73,7 @@ function signalFor(signal, fixture) {
       license: c.license,
     })),
     tracedSources: traceSources(signal.estimate, signal.evidence ?? signal.contributionsToEvidence ?? []),
+    explain: explainEstimate({ estimate: signal.estimate, contributions: signal.contributions }),
   };
 }
 

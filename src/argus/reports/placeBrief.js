@@ -1,4 +1,5 @@
 import { isoFromMs } from '../time/clock.js';
+import { explainEstimate } from '../evidence/explain.js';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -56,6 +57,7 @@ export function buildPlaceBrief({
     estimate: signal.estimate,
     forecast: signal.forecast ?? null,
     contributions: signal.contributions ?? [],
+    explanation: explainEstimate({ estimate: signal.estimate, contributions: signal.contributions ?? [], place: place.name }),
   }));
 
   const classes = signalRows.map((r) => r.estimate.dataClass ?? 'unknown');
@@ -107,22 +109,23 @@ function renderSignal(name, signalRow, sourceIndex) {
     .map((c) => {
       const manifest = sourceIndex.get(c.sourceId);
       const dim = c.included ? '' : ' class="demoted"';
-      return `<tr${dim}><td>${escapeHtml(c.sourceId)}</td><td>${escapeHtml(c.provider)}</td><td>${c.rawValue}</td><td>${c.normalized}</td><td>${c.weight}</td><td>${escapeHtml(c.freshness)}</td><td>${escapeHtml(c.kind)}</td><td>${escapeHtml(manifest ? manifest.license : '?')}</td><td>${escapeHtml(c.reason)}</td></tr>`;
+      return `<tr${dim}><td>${escapeHtml(c.sourceId)}</td><td>${escapeHtml(c.provider)}</td><td>${c.rawValue}</td><td>${c.normalized}</td><td>${c.weight} (${c.baseWeight ?? c.weight} × ${c.correlationFactor ?? 1})</td><td>${escapeHtml(c.freshness)}</td><td>${escapeHtml(c.kind)}</td><td>${escapeHtml(manifest ? manifest.license : '?')}</td><td>${escapeHtml(c.reason)}</td></tr>`;
     })
     .join('');
 
   return `
   <section class="signal ${cls}">
     <h3>${escapeHtml(name)} — ${escapeHtml(estimate.band)} <span class="state">${escapeHtml(estimate.confidenceState ?? '')}</span> <span class="state">${escapeHtml(String(estimate.dataClass ?? 'unknown').toUpperCase())}</span></h3>
-    <p class="score">${scoreText} <span class="conf">confidence ${estimate.confidence}</span></p>
+    <p class="score">${scoreText} <span class="conf">evidence confidence ${estimate.confidence}</span></p>
+    <p class="explain">${escapeHtml(signalRow.explanation?.explanation ?? '')}</p>
     <table>
       <thead><tr><th>Horizon</th><th>Estimate</th><th>Band</th><th>Confidence</th></tr></thead>
       <tbody>${forecastRows}</tbody>
     </table>
     <details>
-      <summary>Evidence (${signalRow.contributions.length} contributions)</summary>
+      <summary>Evidence Inspector (${signalRow.contributions.length} contributions)</summary>
       <table>
-        <thead><tr><th>Source</th><th>Provider</th><th>Raw</th><th>Normalized</th><th>Weight</th><th>Freshness</th><th>Kind</th><th>Licence</th><th>Decision</th></tr></thead>
+        <thead><tr><th>Source</th><th>Provider</th><th>Raw</th><th>Normalized</th><th>Effective (base × corr)</th><th>Freshness</th><th>Kind</th><th>Licence</th><th>Decision</th></tr></thead>
         <tbody>${evidenceRows}</tbody>
       </table>
     </details>
@@ -148,6 +151,7 @@ function renderHtml({ place, mode, commercialProfile, generatedAtMs, methodology
   table { border-collapse: collapse; width:100%; margin:0.5rem 0 1rem; }
   th,td { border:1px solid #24303d; padding:4px 8px; text-align:left; }
   .range,.conf,.state { color:#8aa0b4; font-weight:normal; }
+  .explain { color:#a7f3d0; font-size:12px; border-left:3px solid #10b981; padding-left:8px; }
   .signal { border:1px solid #24303d; border-radius:8px; padding:0 1rem 1rem; margin:1rem 0; }
   .signal.solid { border-left:6px solid #4ade80; }
   .signal.inferred { border-left:6px dashed #facc15; }
