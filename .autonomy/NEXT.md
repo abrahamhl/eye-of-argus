@@ -2,29 +2,28 @@
 
 Execute top-down. Each story: implement → test → commit → update STATE.
 
+## S30 — Adversarial review of the core
+- Independent reviewer inspects `src/argus/**` and `test/**`.
+- Challenge the tests themselves: do they assert real behaviour or tautologies?
+- Record findings in `.autonomy/ERRORS.md`; open follow-ups as new stories.
+- Status: IN PROGRESS (see ERRORS.md additions).
+
 ## S03 — Reproduce CalmPath donor check/build (forensics)
-- Command: `cd C:\dev\recruiter-evidence\calmpath-maps-pro && corepack pnpm@10.4.1 install --frozen-lockfile && pnpm check && pnpm build`
-- Deliverable: `docs/DONOR_NOTES.md` with what was reusable (algorithms/concepts) and what was intentionally not imported.
-- Blocker: needs donor deps installed; no secrets required.
+- Command: `cd C:\dev\recruiter-evidence\calmpath-maps-pro; corepack prepare pnpm@10.4.1 --activate; pnpm install --frozen-lockfile; pnpm check; pnpm build`
+- Deliverable: `docs/DONOR_NOTES.md` — reusable concepts vs intentionally excluded components (no React import).
+- No secrets required.
 
-## S27 — Calibration fixture framework
-- Add `src/argus/calibration/metrics.js`: band accuracy, MAE, Brier, calibration curve.
-- Add `test/calibration.test.mjs` with a tiny labelled fixture (deterministic).
-- Wire `bin/calibrate.mjs --fixture <file>` writing `out/calibration/*.json` (gitignored).
-- Do NOT publish accuracy numbers from synthetic data.
+## S19 — Confidence UI
+- Blocked until a UI-integration story is scoped against upstream's globe.
 
-## S28 — Performance/visual audit of the core
-- Add `test/perf.test.mjs` bounding fusion of 1,000 observations under a budget.
-- Document results in `docs/PERFORMANCE.md`.
+## S24 — Real offline/cache store
+- Persist last-known observations + registry to a local store; keep freshness states.
+- Must never surface cached data as live. Tests must cover the offline path.
 
-## S30 — Adversarial review
-- Spawn an independent reviewer over the core; record findings in `.autonomy/ERRORS.md`.
-
-## S29 — Case study
-- `docs/CASE_STUDY.md`: problem, evidence philosophy, offline-first, licence engine, results, limits.
-
-## S19 — Confidence UI (later)
-- Only after upstream globe integration story is scoped.
+## S12/S13 — Live adapters (NDW, OVapi)
+- Replace synthetic fixtures with server-side fetchers behind the existing manifest/observation contract.
+- Requires server key-broker pattern from upstream; no keys committed.
+- Smoke tests stay separate from deterministic CI.
 
 ## Continuation protocol
 1. Read STATE.md; `git status`; read PRD.json.

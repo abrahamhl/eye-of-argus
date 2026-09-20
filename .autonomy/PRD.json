@@ -9,7 +9,8 @@
   "donor": { "repo": "abrahamhl/calmpath-maps-pro", "sha": "4ccaf84461564a524cb334726f5142385a35f778", "mode": "concepts-only" },
   "philosophy": { "repo": "abrahamhl/argus", "sha": "1fe1e8554304c32a19937c6f17ff066a0b8e753b" },
   "firstRegion": "Arnhem / Gelderland / Netherlands",
-  "currentStory": "S26",
+  "currentStory": "S30",
+  "nextStories": ["S30", "S03", "S19", "S24", "S12", "S13"],
   "backlog": [
     { "id": "S01", "title": "Snapshot upstream and donor SHAs", "status": "done" },
     { "id": "S02", "title": "Reproduce upstream tests/build/boundaries", "status": "done", "evidence": "4145 tests, 4135 pass, 0 fail, 10 skipped; boundaries exit 0; build exit 0" },
@@ -37,9 +38,9 @@
     { "id": "S24", "title": "Offline/cache behavior", "status": "partial", "note": "freshness states done; local persistence not yet" },
     { "id": "S25", "title": "Commercial-safe profile", "status": "done", "artifact": "src/argus/sources/registry.js" },
     { "id": "S26", "title": "Deterministic tests", "status": "done", "evidence": "43/43 pass" },
-    { "id": "S27", "title": "Calibration fixture framework", "status": "todo", "artifact": "docs/CALIBRATION.md" },
-    { "id": "S28", "title": "Visual/performance audit", "status": "todo" },
-    { "id": "S29", "title": "README/case study", "status": "partial", "note": "README done; case study pending" },
+    { "id": "S27", "title": "Calibration fixture framework", "status": "done", "artifact": "src/argus/calibration/metrics.js + bin/calibrate.mjs" },
+    { "id": "S28", "title": "Performance audit (headless core)", "status": "done", "artifact": "test/perf.test.mjs", "note": "visual audit still deferred until UI integration" },
+    { "id": "S29", "title": "README/case study", "status": "done", "artifact": "docs/CASE_STUDY.md" },
     { "id": "S30", "title": "Adversarial product/engineering review", "status": "todo" }
   ],
   "nextStories": ["S03", "S27", "S28", "S30", "S29", "S19"]

@@ -16,8 +16,10 @@ Phase: intelligence core scaffolded and tested; live adapters + UI pending.
   evidence chain, confidence states, robust fusion, crowd, calm, social,
   forecast, privacy suppression, place brief.
 - First vertical slice `bin/arnhem-demo.mjs` (two venues, now/+15/+30/+60, CALM vs SOCIAL ranking, briefs written to `out/`).
-- Deterministic tests: **43/43 pass** (`node --test test/*.test.mjs`).
-- Docs: provenance, capability matrix, licensing matrix, source candidates, evidence model, privacy model, calibration gate, ROI backlog.
+- Deterministic tests: **51/51 pass** (`node --test test/*.test.mjs`).
+- Docs: provenance, capability matrix, licensing matrix, source candidates, evidence model, privacy model, calibration gate, ROI backlog, case study.
+- Calibration metrics (`src/argus/calibration/metrics.js`) + CLI (`bin/calibrate.mjs`) that refuses to report on a synthetic fixture without `--allow-synthetic`.
+- Performance test: fusion of 1000 observations is deterministic and bounded (`test/perf.test.mjs`).
 - Donor SHA captured: calmpath-maps-pro `4ccaf84461564a524cb334726f5142385a35f778`; argus `1fe1e8554304c32a19937c6f17ff066a0b8e753b`.
 
 ## Current test command
@@ -32,5 +34,6 @@ node --test test/*.test.mjs
 - Local persistence / true offline cache store.
 - Cesium globe integration or any UI.
 - Calibration against ground truth (none performed).
+- Perf budget documented at 2000 ms for 1000 observations (headless core only).
 - Upstream module import into this repo (no integration yet).
 - Remote GitHub repository (local git only; no push, no visibility decision).

@@ -19,6 +19,12 @@
 - Mitigation: document; install Node 24 before claiming upstream's allocation gate.
 - Status: open (documented in `docs/UPSTREAM_PROVENANCE.md`).
 
+## E005 — PowerShell wrote a UTF-8 BOM into a JSON calibration fixture (FIXED)
+- Symptom: `SyntaxError: Unexpected token '﻿'` from `bin/calibrate.mjs`.
+- Cause: `Set-Content -Encoding utf8` on Windows PowerShell 5.1 emits a BOM.
+- Fix: CLI strips a leading BOM before `JSON.parse` (and `[IO.File]::WriteAllText` for fixtures).
+- Status: fixed.
+
 ## E004 — Governance docs pending
 - Placeholder governance docs from donor/argus were **not** copied here. This
   project's autonomy files are the source of truth until S03/S29/S30 land.
