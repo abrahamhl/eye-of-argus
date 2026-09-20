@@ -13,13 +13,14 @@ Date: 2026-09-20. Model: DeepSeek V4.1 Flash.
 | `593abf8` | feat(experiments): NDW DATEX II adapter, offline workspace, analyst mode |
 
 Baseline before this branch: `f735316` (public repo `abrahamhl/eye-of-argus`,
-65 tests, CI + Pages green).
+65 tests at that time, CI + Pages green). Current generated counts live in
+`src/argus/product/truthSnapshot.js`.
 
 ## Commands run and actual results
 
 | Command | Result |
 |---|---|
-| `node --test test/*.test.mjs` | **94 tests, 85 pass, 0 fail** |
+| `node --test test/*.test.mjs` | **106 tests, 106 pass, 0 fail** |
 | `node bin/arnhem-demo.mjs` | prints `SYNTHETIC DEMO` banner; writes briefs to `out/` |
 | `node bin/build-site.mjs` | writes `site/data.json` from the core |
 | `node bin/verify-site.mjs` | `site verification OK` |
@@ -47,7 +48,26 @@ Deterministic jobs use fixtures only; `live-smoke.yml` is separate (manual/cron)
 | 12 | COMMERCIAL_SAFE enforced | ✅ NC/ND denylist + profile filtering, tested |
 | 13 | No fake accuracy claims | ✅ calibration status = NOT YET CALIBRATED |
 | 14 | Calibration protocol exists | ✅ `docs/REAL_WORLD_CALIBRATION_PROTOCOL.md` |
-| 15 | Clean CI passes | see branch CI (tested locally: 94/94) |
+| 15 | Clean CI passes | see branch CI (tested locally: 106/106) |
+| 16 | Claims generated from one evidence layer; CI fails on drift | ✅ XYZ registry + Truth Snapshot + verify-site + boundary guard |
+
+## XYZ truth layer (session 5)
+
+- Canonical registry: `src/argus/product/xyz.js` (15 public entries, statuses
+  VERIFIED/SUPPORTED/BLOCKED).
+- Truth Snapshot: `src/argus/product/truthSnapshot.js` (test count, runtime
+  deps, adapter implementation/fixture/live statuses, calibration, workspace,
+  Cesium). No network.
+- `bin/build-site.mjs` renders X/Y/Z from the registry and resolves measured
+  numbers from the snapshot; no claim or count is typed by hand.
+- `bin/verify-site.mjs` fails on drift: test count, adapter statuses,
+  calibration truth, unresolved tokens, VERIFIED-without-evidence.
+- `bin/guard-private-boundary.mjs` fails if private filenames appear outside
+  `.private/` (gitignored). Public/private boundary documented in
+  `docs/DOCUMENT_BOUNDARY.md`; method in `docs/XYZ_METHOD.md`.
+- Historical experiments (dated, not guarantees) in `docs/EXPERIMENTS.md`.
+- Live status is per-source and dated (`docs/live-verification.json`), and is
+  kept separate from implementation and fixture status.
 
 ## Live sources implemented
 

@@ -53,7 +53,9 @@
     { "id": "S39", "title": "Real-world calibration pilot", "status": "blocked", "note": "requires lawful field ground truth" },
     { "id": "S40", "title": "Persisted offline workspace", "status": "done", "artifact": "src/argus/workspace/store.js" },
     { "id": "S41", "title": "Analyst mode (provenance + calibration status)", "status": "done", "artifact": "site/app.js" },
-    { "id": "S42", "title": "Cesium globe integration (separate presentation layer)", "status": "todo" }
+    { "id": "S42", "title": "Cesium globe integration (separate presentation layer)", "status": "todo" },
+    { "id": "S45", "title": "XYZ truth layer (registry + snapshot + gates)", "status": "done", "artifact": "src/argus/product/xyz.js + truthSnapshot.js", "evidence": "test/truth-layer.test.mjs; verify-site drift gate" },
+    { "id": "S46", "title": "Private/public boundary + guard", "status": "done", "artifact": "bin/guard-private-boundary.mjs + docs/DOCUMENT_BOUNDARY.md" }
   ],
   "nextStories": ["S03", "S27", "S28", "S30", "S29", "S19"]
 }

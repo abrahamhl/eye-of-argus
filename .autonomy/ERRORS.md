@@ -41,6 +41,15 @@
   calibration exists.
 - Status: fixed.
 
+## E008 — Truth drift between docs and executable state (FIXED)
+- Symptom: the site/investor text carried hardcoded counts (e.g. `65/65`) while
+  the real suite had grown; AUDIT_FINAL disagreed with CI.
+- Fix: single XYZ registry + Truth Snapshot; site/docs render from them;
+  `bin/verify-site.mjs` fails when the published test count differs from the
+  source-derived count, and `test/truth-layer.test.mjs` enforces registry
+  invariants (VERIFIED requires existing evidence; no stale counts).
+- Status: fixed.
+
 ## E004 — Governance docs pending
 - Placeholder governance docs from donor/argus were **not** copied here. This
   project's autonomy files are the source of truth until S03/S29/S30 land.

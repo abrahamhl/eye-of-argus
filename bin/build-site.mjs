@@ -1,11 +1,11 @@
 /**
- * Builds the GitHub Pages simulator data from the real intelligence core.
- * Nothing here is hand-written fiction: every number comes from running the
- * same modules the CLI uses, at a fixed clock, offline.
+ * Builds the GitHub Pages simulator data from the real core plus the Truth
+ * Snapshot and XYZ registry. Nothing here is hand-written fiction, and no
+ * measured number is typed by hand: counts come from the snapshot.
  *
  *   node bin/build-site.mjs
  */
-import { mkdirSync, writeFileSync, copyFileSync, readdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, copyFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -20,19 +20,14 @@ import { aggregateSpatialGrid, suppressCell } from '../src/argus/privacy/suppres
 import { METHODOLOGY_VERSION } from '../src/argus/config/methodology.js';
 import { explainEstimate } from '../src/argus/evidence/explain.js';
 import { LIVE_MANIFESTS } from '../src/argus/sources/adapters/index.js';
+import { buildTruthSnapshot } from '../src/argus/product/truthSnapshot.js';
+import { publicEntries, renderEntry } from '../src/argus/product/xyz.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = join(HERE, '..', 'site');
 const FIXED_NOW = Date.parse('2026-09-20T18:00:00Z');
 const METHODOLOGY = METHODOLOGY_VERSION;
-
-/** Count test() calls so the published number can never drift from reality. */
-function countTests() {
-  const dir = join(HERE, '..', 'test');
-  return readdirSync(dir)
-    .filter((file) => file.endsWith('.test.mjs'))
-    .reduce((total, file) => total + (readFileSync(join(dir, file), 'utf8').match(/^test\(/gm) || []).length, 0);
-}
+const snapshot = buildTruthSnapshot();
 
 function round(value, digits = 2) {
   return value === null || value === undefined ? null : Number(value.toFixed(digits));
@@ -75,13 +70,16 @@ function signalFor(signal, fixture) {
       rawValue: c.rawValue,
       normalized: c.normalized,
       weight: c.weight,
+      baseWeight: c.baseWeight,
+      correlationFactor: c.correlationFactor,
+      correlationGroup: c.correlationGroup ?? null,
       freshness: c.freshness,
       kind: c.kind,
       included: c.included,
       reason: c.reason,
       license: c.license,
     })),
-    tracedSources: traceSources(signal.estimate, signal.evidence ?? signal.contributionsToEvidence ?? []),
+    tracedSources: traceSources(signal.estimate, signal.evidence ?? []),
     explain: explainEstimate({ estimate: signal.estimate, contributions: signal.contributions }),
   };
 }
@@ -134,21 +132,32 @@ function privacyDemo() {
     { lat: 51.9790, lon: 5.9100, count: 1 },
     { lat: 52.1000, lon: 6.1000, count: 9 },
   ];
-  const aggregated = aggregateSpatialGrid({ cells, cellSizeM: 1200, k: 5 });
+  const aggregated = aggregateSpatialGrid({ cells, cellSizeM: 1200, k: snapshot.privacy.defaultK });
   return {
-    k: 5,
+    k: snapshot.privacy.defaultK,
     rawCells: cells,
     released: aggregated.released,
     suppressed: aggregated.suppressed,
     examples: [
-      { label: 'cell with 3 contributors', ...suppressCell({ count: 3, k: 5 }) },
-      { label: 'cell with 4 contributors', ...suppressCell({ count: 4, k: 5 }) },
-      { label: 'cell with 22 contributors', ...suppressCell({ count: 22, k: 5 }) },
+      { label: 'cell with 3 contributors', ...suppressCell({ count: 3, k: snapshot.privacy.defaultK }) },
+      { label: 'cell with 4 contributors', ...suppressCell({ count: 4, k: snapshot.privacy.defaultK }) },
+      { label: 'cell with 22 contributors', ...suppressCell({ count: 22, k: snapshot.privacy.defaultK }) },
     ],
   };
 }
 
 const fixture = createArnhemFixture(FIXED_NOW);
+
+const limitations = [
+  'All source values in the Arnhem demo are synthetic fixtures — not live feeds.',
+  snapshot.calibration.status === 'NOT_YET_CALIBRATED'
+    ? 'No calibration against ground truth; evidence confidence is quality, not probability.'
+    : null,
+  `Adapters implemented: ${snapshot.adapters.total}; fixture-backed: ${snapshot.adapters.fixtureBacked}; live-verified this run: ${snapshot.adapters.remoteLiveVerified}.`,
+  snapshot.cesium.available ? null : 'The visual product is a static simulator; the Cesium globe is not integrated.',
+  'Correlation handling is simple damping, not a Bayesian model.',
+  `Privacy k=${snapshot.privacy.defaultK} is an engineering placeholder, not a compliance claim.`,
+].filter(Boolean);
 
 const data = {
   product: 'Eye of Argus',
@@ -158,16 +167,29 @@ const data = {
   generatedAt: new Date(FIXED_NOW).toISOString(),
   methodologyVersion: METHODOLOGY,
   upstream: {
-    repo: 'bilawalsidhu/gods-eye-view',
-    sha: '0d41b6be5490db1f10a171f238be75db4d4ec3b4',
-    license: 'MIT',
-    url: 'https://github.com/bilawalsidhu/gods-eye-view',
+    repo: snapshot.upstream.repo,
+    sha: snapshot.upstream.sha,
+    license: snapshot.upstream.license,
+    relationship: snapshot.upstream.relationship,
+    url: `https://github.com/${snapshot.upstream.repo}`,
   },
   evidence: {
-    tests: countTests(),
-    runtimeDependencies: 0,
+    tests: snapshot.tests.total,
+    runtimeDependencies: snapshot.runtimeDependencies,
     ci: 'GitHub Actions — Node 20.x + 22.x, offline, deterministic',
     repo: 'https://github.com/abrahamhl/eye-of-argus',
+  },
+  investorSnapshot: {
+    tests: `${snapshot.tests.pass}/${snapshot.tests.total}`,
+    runtimeDependencies: snapshot.runtimeDependencies,
+    adaptersLiveCapable: snapshot.adapters.liveCapable,
+    adaptersRemoteLiveVerified: snapshot.adapters.remoteLiveVerified,
+    calibration: snapshot.calibration.status,
+    offlineWorkspace: snapshot.workspace.available ? 'VERIFIED' : 'NOT AVAILABLE',
+    analystMode: snapshot.analystMode.available ? 'AVAILABLE' : 'NOT AVAILABLE',
+    commercialSafe: snapshot.commercialSafe.enabled ? 'ACTIVE' : 'DISABLED',
+    cesium: snapshot.cesium.available ? 'INTEGRATED' : 'NOT YET INTEGRATED',
+    liveVerification: snapshot.ci.lastKnownEvidence,
   },
   freshnessStates: ['LIVE', 'CACHED', 'STALE', 'STATIC', 'INFERRED', 'UNAVAILABLE'],
   confidenceStates: ['VERIFIED', 'SUPPORTED', 'INFERRED', 'UNKNOWN', 'CONTRADICTED'],
@@ -177,51 +199,30 @@ const data = {
     PERSONAL: buildProfile(fixture, PROFILE.PERSONAL),
   },
   privacy: privacyDemo(),
-  calibration: { status: 'NOT_YET_CALIBRATED', protocol: 'docs/REAL_WORLD_CALIBRATION_PROTOCOL.md' },
-  adapters: LIVE_MANIFESTS.map((m) => ({
-    id: m.id, provider: m.provider, type: m.type, license: m.license,
-    commercialUse: m.commercialUse, redistribution: m.redistribution, privacyClass: m.privacyClass,
-    adapterVersion: m.adapterVersion, sourceURL: m.sourceURL, termsURL: m.termsURL,
-    dataClass: m.dataClass, correlationGroup: m.correlationGroup ?? null,
-    confidencePrior: m.confidencePrior, freshnessPolicy: m.freshnessPolicy ?? null,
+  calibration: snapshot.calibration,
+  adapters: LIVE_MANIFESTS.map((m) => {
+    const record = snapshot.adapters.records.find((r) => r.id === m.id) ?? {};
+    return {
+      id: m.id, provider: m.provider, type: m.type, license: m.license,
+      commercialUse: m.commercialUse, redistribution: m.redistribution, privacyClass: m.privacyClass,
+      adapterVersion: m.adapterVersion, sourceURL: m.sourceURL, termsURL: m.termsURL,
+      dataClass: m.dataClass, correlationGroup: m.correlationGroup ?? null,
+      confidencePrior: m.confidencePrior, freshnessPolicy: m.freshnessPolicy ?? null,
+      implementationStatus: record.implementationStatus ?? 'IMPLEMENTED',
+      fixtureStatus: record.fixtureStatus ?? 'NO_FIXTURE',
+      liveStatus: record.liveStatus ?? 'NOT_LIVE_VERIFIED',
+      lastLiveVerification: record.lastLiveVerification ?? null,
+      lastLiveError: record.lastLiveError ?? null,
+    };
+  }),
+  xyz: publicEntries().map((entry) => ({
+    ...renderEntry(entry, snapshot),
+    evidence: { tests: entry.evidence?.tests ?? [], source: entry.evidence?.source ?? [] },
   })),
-  xyz: [
-    {
-      x: 'An offline-first evidence engine that keeps four measures separate and shows its proof',
-      y: '65/65 deterministic tests, 0 runtime dependencies, CI green on Node 20.x and 22.x',
-      z: 'Observation → Evidence → Estimate with source manifests, freshness weighting and confidence states',
-    },
-    {
-      x: 'Crowd, Calm and Social Opportunity computed from independent sources at NOW / +15 / +30 / +60',
-      y: 'Burger King Centrum Crowd HIGH 73.0 (63–83) / Calm LOW 22.0; Park Sonsbeek Crowd MODERATE 38.1 / Calm HIGH 70.9',
-      z: 'Median/MAD outlier-demoting fusion with an absolute cutoff floor, over a fixed clock and synthetic fixtures',
-    },
-    {
-      x: 'Licence-safe by default: non-commercial data cannot reach a commercial build',
-      y: 'COMMERCIAL_SAFE excludes the CC-BY-NC-4.0 events source before fusion; verified by tests',
-      z: 'Machine-readable licence profiles with an NC/ND licence denylist in the source registry',
-    },
-    {
-      x: 'Privacy-preserving aggregate telemetry',
-      y: 'k=5 suppression demo: cells below 5 contributors are withheld; released cells expose a band, not a count',
-      z: 'Grid aggregation, suppression thresholds and a local privacy budget that rejects rewound time',
-    },
-    {
-      x: 'Traceable, auditable conclusions',
-      y: 'Every estimate resolves to source manifests through hashed EvidenceRecords; Calm traces its derived crowd term',
-      z: 'Immutable observation/evidence/estimate ids and run metadata (runId, methodologyVersion, configurationHash)',
-    },
-  ],
-  limitations: [
-    'All source values are synthetic fixtures — not live feeds.',
-    'No calibration against ground truth has been performed; no accuracy claim is made.',
-    'Confidence and bands are estimates, not person counts.',
-    'UI/globe integration is not built; this page is a static presentation of the headless core.',
-    'Routing, saved workspaces and live adapters (NDW/OVapi) are future stories.',
-  ],
+  limitations,
 };
 
 mkdirSync(SITE, { recursive: true });
 writeFileSync(join(SITE, 'data.json'), JSON.stringify(data, null, 2));
 copyFileSync(join(HERE, '..', 'LICENSE'), join(SITE, 'LICENSE'));
-process.stdout.write(`Wrote ${join(SITE, 'data.json')}\n`);
+process.stdout.write(`Wrote ${join(SITE, 'data.json')} (${data.xyz.length} XYZ entries)\n`);

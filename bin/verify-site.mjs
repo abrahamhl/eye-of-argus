@@ -1,22 +1,18 @@
 /**
- * Verifies the GitHub Pages artifact before it is uploaded. This is a real
- * gate: the deploy workflow will not publish a broken or empty simulator.
+ * Verifies the GitHub Pages artifact against the Truth Snapshot and XYZ
+ * registry before it is uploaded. Deployment fails on truth drift.
  *
  *   node bin/verify-site.mjs
  */
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SITE = join(ROOT, 'site');
+import { buildTruthSnapshot, REPO_ROOT } from '../src/argus/product/truthSnapshot.js';
+import { publicEntries, validateXyzRegistry } from '../src/argus/product/xyz.js';
 
-function countTests() {
-  const dir = join(ROOT, 'test');
-  return readdirSync(dir)
-    .filter((file) => file.endsWith('.test.mjs'))
-    .reduce((total, file) => total + (readFileSync(join(dir, file), 'utf8').match(/^test\(/gm) || []).length, 0);
-}
+const SITE = join(REPO_ROOT, 'site');
+const snapshot = buildTruthSnapshot();
 
 const failures = [];
 function check(condition, message) { if (!condition) failures.push(message); }
@@ -41,11 +37,8 @@ if (existsSync(join(SITE, 'app.js'))) {
 
 let data = null;
 if (existsSync(join(SITE, 'data.json'))) {
-  try {
-    data = JSON.parse(readFileSync(join(SITE, 'data.json'), 'utf8'));
-  } catch (error) {
-    failures.push(`data.json is not valid JSON: ${error.message}`);
-  }
+  try { data = JSON.parse(readFileSync(join(SITE, 'data.json'), 'utf8')); }
+  catch (error) { failures.push(`data.json is not valid JSON: ${error.message}`); }
 }
 
 if (data) {
@@ -53,13 +46,36 @@ if (data) {
   check(data.methodologyVersion, 'missing methodologyVersion');
   check(data.synthetic === true, 'demo data must be marked synthetic');
   check(data.dataClass === 'synthetic', 'data.dataClass must be synthetic for the demo');
-  check(Number.isInteger(data.evidence?.tests) && data.evidence.tests > 0, 'evidence.tests missing');
-  check(data.evidence?.tests === countTests(), `site test count ${data.evidence?.tests} != source count ${countTests()}`);
-  check(data.evidence?.runtimeDependencies === 0, 'runtime dependencies must be zero');
-  check(Array.isArray(data.xyz) && data.xyz.length >= 3, 'xyz statements missing');
-  check(data.upstream?.sha?.length === 40, 'upstream sha is not a full 40-char commit');
-  check(Array.isArray(data.adapters) && data.adapters.length >= 3, 'adapter registry missing from the site');
+  check(data.evidence?.runtimeDependencies === snapshot.runtimeDependencies, 'runtime dependency count drifted');
+  check(data.evidence?.tests === snapshot.tests.total, `published test count ${data.evidence?.tests} != snapshot ${snapshot.tests.total}`);
+
+  // Truth Snapshot is surfaced for the technical investor view.
+  const inv = data.investorSnapshot ?? {};
+  check(typeof inv.tests === 'string', 'investorSnapshot.tests missing');
+  check(inv.runtimeDependencies === snapshot.runtimeDependencies, 'investorSnapshot runtime deps drifted');
+  check(inv.adaptersLiveCapable === snapshot.adapters.liveCapable, 'investorSnapshot live-capable adapters drifted');
+  check(inv.calibration === 'NOT_YET_CALIBRATED', 'investorSnapshot calibration must be NOT_YET_CALIBRATED');
+  check(inv.commercialSafe === 'ACTIVE', 'investorSnapshot commercial-safe must be ACTIVE');
+
+  // Calibration truth must never be overstated.
   check(data.calibration?.status === 'NOT_YET_CALIBRATED', 'calibration status must be NOT_YET_CALIBRATED');
+
+  // Adapters: implementation, fixture and live status must stay distinct.
+  check(Array.isArray(data.adapters) && data.adapters.length === snapshot.adapters.total, 'adapter registry drifted');
+  for (const adapter of data.adapters ?? []) {
+    check(adapter.implementationStatus === 'IMPLEMENTED', `${adapter.id}: implementationStatus`);
+    check(['FIXTURE_VERIFIED', 'NO_FIXTURE'].includes(adapter.fixtureStatus), `${adapter.id}: fixtureStatus`);
+    check(['LIVE_VERIFIED', 'LIVE_NOT_VERIFIED', 'NOT_LIVE_VERIFIED'].includes(adapter.liveStatus), `${adapter.id}: liveStatus`);
+  }
+
+  // XYZ: rendered entries must match the registry and carry no unresolved tokens.
+  const expected = publicEntries();
+  check(Array.isArray(data.xyz) && data.xyz.length === expected.length, `rendered XYZ count ${data.xyz?.length} != registry ${expected.length}`);
+  for (const entry of data.xyz ?? []) {
+    check(entry.x && entry.y && entry.z, `${entry.id}: missing X/Y/Z`);
+    check(!String(entry.x + entry.y + entry.z).includes('{{'), `${entry.id}: unresolved token`);
+    check(typeof entry.status === 'string', `${entry.id}: missing status`);
+  }
 
   for (const profile of ['COMMERCIAL_SAFE', 'PERSONAL']) {
     const p = data.profiles?.[profile];
@@ -88,9 +104,13 @@ if (data) {
   check(examples.every((e) => e.suppressed || !('value' in e)), 'released privacy cell must not expose a count');
 }
 
+// Registry invariants: every VERIFIED claim must point at real evidence files.
+const registryProblems = validateXyzRegistry({ rootDir: REPO_ROOT, snapshot });
+for (const problem of registryProblems) failures.push(`xyz: ${problem}`);
+
 if (failures.length) {
   process.stderr.write('site verification FAILED:\n');
   for (const f of failures) process.stderr.write(`  - ${f}\n`);
   process.exit(1);
 }
-process.stdout.write('site verification OK: simulator artifact is complete and consistent.\n');
+process.stdout.write(`site verification OK: ${data.xyz.length} XYZ entries, ${data.evidence.tests} tests, calibration ${data.calibration.status}.\n`);

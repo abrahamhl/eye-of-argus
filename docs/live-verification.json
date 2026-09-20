@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-09-20T21:58:14.264Z",
+  "method": "node bin/record-live-verification.mjs",
+  "sources": [
+    {
+      "sourceId": "ndw-traffic-live",
+      "ok": true,
+      "error": null
+    },
+    {
+      "sourceId": "ovapi-transit-live",
+      "ok": false,
+      "error": "http-429"
+    },
+    {
+      "sourceId": "open-meteo-live",
+      "ok": true,
+      "error": null
+    }
+  ],
+  "responded": 2,
+  "total": 3,
+  "note": "Single live run. A historical observation, not a standing guarantee of upstream availability."
+}

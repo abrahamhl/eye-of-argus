@@ -66,6 +66,22 @@ therefore never classified LIVE.
 This repository is an **original derivative integrating concepts**, not a
 GitHub fork. We do not claim fork status or rewrite history to fake ancestry.
 
-## D015 — Scoring coefficients live in versioned config
-`src/argus/config/methodology.js` holds every scoring coefficient. Changing one
-bumps `METHODOLOGY_VERSION` (currently `m0.2`, explicitly heuristic).
+## D016 — One evidence-backed truth layer
+- Decision: product claims live in a single XYZ registry and measured facts in a
+  Truth Snapshot; the site and docs render from them.
+- Reason: hardcoded numbers (e.g. a stale `65/65`) drift from reality and become
+  false claims.
+- Evidence: `src/argus/product/xyz.js`, `truthSnapshot.js`, `bin/verify-site.mjs`,
+  `test/truth-layer.test.mjs`.
+- Rejected alternative: keep XYZ strings in `bin/build-site.mjs` and update them
+  by hand.
+- Consequence: changing a score, a test, or an adapter updates the published
+  truth; `verify-site` fails if public claims disagree with executable state.
+
+## D017 — Private material is gitignored and guarded
+- Decision: strategy/pricing/funding/commercial notes live in `.private/`
+  (gitignored) using a claim schema; a CI guard fails on leaking filenames.
+- Reason: private strategy must not be published, and private claims must not
+  harden into fictional certainty.
+- Evidence: `.gitignore`, `bin/guard-private-boundary.mjs`, `docs/DOCUMENT_BOUNDARY.md`.
+- Consequence: `.private/` is local-only; no fake business facts are committed.

@@ -78,3 +78,11 @@ jobs:
           grep -q "0d41b6be5490db1f10a171f238be75db4d4ec3b4" docs/UPSTREAM_PROVENANCE.md
           grep -qi "gods-eye-view" NOTICE.md
           echo "provenance OK"
+
+      - name: Guard private/public boundary
+        run: node bin/guard-private-boundary.mjs
+
+      - name: Truth layer consistency (build + verify)
+        run: |
+          node bin/build-site.mjs
+          node bin/verify-site.mjs

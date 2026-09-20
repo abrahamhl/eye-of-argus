@@ -6,6 +6,8 @@ Execute top-down. Each story: implement → test → commit → update STATE.
 - S33/S35/S36/S37/S38/S40/S41: normalized confidence, synthetic honesty, live
   adapters (OVapi GTFS-RT, Open-Meteo, NDW DATEX II), offline cache, versioned
   config, Evidence Inspector, offline workspace, Analyst mode.
+- S45/S46: XYZ truth layer (registry + Truth Snapshot + drift gates) and the
+  private/public boundary guard.
 
 ## S42 — Cesium globe integration (next, large)
 - Separate presentation boundary; reuse upstream visual architecture with

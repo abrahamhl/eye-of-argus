@@ -10,6 +10,9 @@ out/
 site/data.json
 site/LICENSE
 
+# Private strategy, funding and commercial material — never committed.
+.private/
+
 # Environment
 .env
 .env.*

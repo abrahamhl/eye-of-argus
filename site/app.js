@@ -459,31 +459,51 @@ function renderAnalyst(lower) {
       </div>
       <div>
         <h2 class="muted">ADAPTERS IN THE REGISTRY</h2>
-        <table><thead><tr><th>Adapter</th><th>Type</th><th>Licence</th><th>Comm.</th><th>Ver</th><th>Data class</th><th>Correlation</th></tr></thead>
-        <tbody>${d.adapters.map((a) => `<tr><td>${escapeHtml(a.id)}</td><td>${escapeHtml(a.type)}</td><td>${escapeHtml(a.license)}</td><td>${a.commercialUse}</td><td>${escapeHtml(a.adapterVersion)}</td><td>${escapeHtml(a.dataClass)}</td><td>${escapeHtml(a.correlationGroup ?? '—')}</td></tr>`).join('')}</tbody></table>
-        <p class="muted">Deterministic CI runs on recorded fixtures only; live fetching is a separate smoke workflow.</p>
+        <table><thead><tr><th>Adapter</th><th>Type</th><th>Licence</th><th>Comm.</th><th>Impl</th><th>Fixture</th><th>Live</th><th>Correlation</th></tr></thead>
+        <tbody>${d.adapters.map((a) => `<tr><td>${escapeHtml(a.id)}</td><td>${escapeHtml(a.type)}</td><td>${escapeHtml(a.license)}</td><td>${a.commercialUse}</td><td>${escapeHtml(a.implementationStatus)}</td><td>${escapeHtml(a.fixtureStatus)}</td><td>${escapeHtml(a.liveStatus)}</td><td>${escapeHtml(a.correlationGroup ?? '—')}</td></tr>`).join('')}</tbody></table>
+        <p class="muted">Implementation, fixture verification and dated live verification are kept separate. Deterministic CI runs on recorded fixtures only.</p>
       </div>
     </div>`;
 }
 
 function renderBrief(lower) {
   const repo = state.data.evidence.repo;
+  const snap = state.data.investorSnapshot;
+  const statusClass = (s) => (s === 'VERIFIED' ? 'solid' : s === 'SUPPORTED' ? 'inferred' : s === 'BLOCKED' ? 'unknown' : 'low-confidence');
   lower.innerHTML = `
-    <h2>INVESTORS · MVP THESIS IN XYZ</h2>
-    <p class="muted">X = outcome achieved · Y = how it is measured · Z = what was implemented. Derived only from verified evidence in this repository.</p>
+    <h2>INVESTORS · XYZ (GENERATED FROM THE TRUTH LAYER)</h2>
+    <p class="muted">X = outcome · Y = measurement · Z = engineering. Every card is generated from the XYZ registry and the Truth Snapshot; none is hand-written, and measured numbers are derived.</p>
     <div class="xyz">
       ${state.data.xyz.map((item) => `
-        <div class="card">
+        <div class="card ${statusClass(item.status)}">
           <div class="k">X — ACHIEVED</div><div class="v">${escapeHtml(item.x)}</div>
           <div class="k">Y — MEASURED BY</div><div class="v">${escapeHtml(item.y)}</div>
-          <div class="k">Z — IMPLEMENTED</div><div class="v z">${escapeHtml(item.z)}</div>
+          <div class="k">Z — IMPLEMENTED WITH</div><div class="v z">${escapeHtml(item.z)}</div>
+          <div class="foot">
+            <span class="tag ${item.status === 'VERIFIED' ? 'LIVE' : ''}">${escapeHtml(item.status)}</span>
+            ${(item.evidence?.tests ?? []).map((t) => `<span class="pill">test: ${escapeHtml(t)}</span>`).join('')}
+            ${(item.evidence?.source ?? []).map((s) => `<span class="pill">src: ${escapeHtml(s)}</span>`).join('')}
+          </div>
         </div>`).join('')}
     </div>
+    <h2>TECHNICAL INVESTOR SNAPSHOT (DERIVED)</h2>
+    <table><tbody>
+      <tr><td>TESTS</td><td>${escapeHtml(snap.tests)}</td></tr>
+      <tr><td>RUNTIME DEPENDENCIES</td><td>${snap.runtimeDependencies}</td></tr>
+      <tr><td>LIVE-CAPABLE ADAPTERS</td><td>${snap.adaptersLiveCapable}</td></tr>
+      <tr><td>REMOTE LIVE-VERIFIED (this run)</td><td>${snap.adaptersRemoteLiveVerified}</td></tr>
+      <tr><td>CALIBRATION</td><td>${escapeHtml(snap.calibration)}</td></tr>
+      <tr><td>OFFLINE WORKSPACE</td><td>${escapeHtml(snap.offlineWorkspace)}</td></tr>
+      <tr><td>ANALYST MODE</td><td>${escapeHtml(snap.analystMode)}</td></tr>
+      <tr><td>COMMERCIAL-SAFE POLICY</td><td>${escapeHtml(snap.commercialSafe)}</td></tr>
+      <tr><td>CESIUM</td><td>${escapeHtml(snap.cesium)}</td></tr>
+      <tr><td>LIVE EVIDENCE</td><td>${escapeHtml(snap.liveVerification)}</td></tr>
+    </tbody></table>
     <h2>HONEST LIMITS (READ BEFORE INVESTING)</h2>
     <ul class="tight">${state.data.limitations.map((l) => `<li>${escapeHtml(l)}</li>`).join('')}</ul>
     <div class="note">What this demonstrates today: engineering capability and a working, tested evidence core.
-      What it does <b>not</b> yet demonstrate: live feeds, calibration against ground truth, users, revenue or market traction.
-      Source: <a href="${repo}" target="_blank" rel="noopener">${repo}</a> · upstream MIT credit: ${escapeHtml(state.data.upstream.repo)}.</div>`;
+      What it does <b>not</b> yet demonstrate: calibration against ground truth, users, revenue or market traction.
+      Source: <a href="${repo}" target="_blank" rel="noopener">${repo}</a> · upstream ${escapeHtml(state.data.upstream.repo)} (${escapeHtml(state.data.upstream.relationship ?? 'DERIVATIVE_NOT_FORK')}).</div>`;
 }
 
 /* ----------------------------------------------------------------- helpers */

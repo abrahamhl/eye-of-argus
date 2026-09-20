@@ -1,89 +1,53 @@
 # STATE — Eye of Argus
 
-Updated: 2026-09-20 (session 1)
-Phase: intelligence core scaffolded and tested; live adapters + UI pending.
+Updated: 2026-09-20 (session 4 — XYZ truth layer)
 
-## Done this session
+## CURRENT TRUTH
 
-- Phase Zero forensics on `bilawalsidhu/gods-eye-view` @ `0d41b6be5490db1f10a171f238be75db4d4ec3b4` (MIT).
-- Reproduced upstream baseline on Node 22.22.2:
-  - `npm ci` exit 0 (EBADENGINE warning: upstream wants Node ≥24.14)
-  - `npm test` exit 0 — 4145 tests, 4135 pass, 0 fail, 10 skipped
-  - `npm run check:boundaries` exit 0
-  - `npm run build` exit 0 (vite, 6.63 s)
-- Original offline intelligence core under `src/argus/`:
-  freshness/clock, source manifest + licence-aware registry, observation,
-  evidence chain, confidence states, robust fusion, crowd, calm, social,
-  forecast, privacy suppression, place brief.
-- First vertical slice `bin/arnhem-demo.mjs` (two venues, now/+15/+30/+60, CALM vs SOCIAL ranking, briefs written to `out/`).
-- Deterministic tests: **94/94 pass** (`node --test test/*.test.mjs`) after S30 fixes.
-- Docs: provenance, capability matrix, licensing matrix, source candidates, evidence model, privacy model, calibration gate, ROI backlog, case study.
-- Calibration metrics (`src/argus/calibration/metrics.js`) + CLI (`bin/calibrate.mjs`) that refuses to report on a synthetic fixture without `--allow-synthetic`.
-- Performance test: fusion of 1000 observations is deterministic and bounded (`test/perf.test.mjs`).
-- Donor SHA captured: calmpath-maps-pro `4ccaf84461564a524cb334726f5142385a35f778`; argus `1fe1e8554304c32a19937c6f17ff066a0b8e753b`.
+Generated facts live in the Truth Snapshot: `node -e "import('./src/argus/product/truthSnapshot.js').then(m=>console.log(m.buildTruthSnapshot()))"`.
+Do not retype these numbers elsewhere.
 
-## Current test command
+- Deterministic tests: **106/106 pass** (`node --test test/*.test.mjs`).
+- Runtime dependencies: **0**.
+- Live-capable adapters: **3** (NDW DATEX II, OVapi GTFS-RT, Open-Meteo).
+  - implementationStatus: IMPLEMENTED for all three.
+  - fixtureStatus: FIXTURE_VERIFIED for all three.
+  - liveStatus: per dated run in `docs/live-verification.json` (a single run is
+    not a standing guarantee).
+- Calibration: **NOT_YET_CALIBRATED**. No accuracy claim is made.
+- Commercial-safe licence policy: ACTIVE.
+- Offline workspace: available (`src/argus/workspace/store.js`).
+- Analyst mode: available (simulator tab).
+- Cesium globe: **NOT integrated** (XYZ status BLOCKED).
+- XYZ registry: `src/argus/product/xyz.js` (15 public entries).
+- Private/public boundary: enforced by `bin/guard-private-boundary.mjs`.
 
-```
-node --test test/*.test.mjs
-```
+## COMPLETED HISTORY (timestamped)
 
-## Deployment
+- 2026-09-20 s1: upstream forensics; original offline core; Arnhem synthetic
+  slice; 43→65 tests; commits `b98a3b3`, `acae204`, `6f178eb`.
+- 2026-09-20 s2: GitHub repo + CI + Pages simulator; commits `ad452bb`…`74c44c8`.
+- 2026-09-20 s3: P0 confidence normalized + Evidence Quality + synthetic markers;
+  P1 live adapters (GTFS-RT, Open-Meteo) + offline cache; commit `7cafb90`,
+  `eb8770c`, CI pinning `9a61002`.
+- 2026-09-20 s4: NDW DATEX II streaming adapter; offline workspace; Analyst mode;
+  commits `593abf8`, `8075d4c`, `699bdde`.
+- 2026-09-20 s5: XYZ truth layer (registry + snapshot + gates), private boundary;
+  commits in this session.
 
-- Public repository: https://github.com/abrahamhl/eye-of-argus (branch `main`).
-- **Live simulator (GitHub Pages):** https://abrahamhl.github.io/eye-of-argus/
-  - `site/` is a dependency-free static HUD (canvas radar, per-metric views,
-    forecast, evidence drill-down, licence engine, privacy suppression,
-    investor XYZ view).
-  - `bin/build-site.mjs` generates `site/data.json` from the real core at a
-    fixed clock; `bin/verify-site.mjs` gates the artifact.
-  - Pages workflow: build → verify → upload → deploy (runs on `main`).
-  - Latest verified: `CI` and `Pages` runs both **success**; site returns 200;
-    deployed `data.json` = product Eye of Argus, tests 94, deps 0, 2 places, 5 XYZ.
-- CI workflow `.github/workflows/ci.yml` runs on push/PR/manual, Node 20.x and
-  22.x, and is **verified green** on GitHub:
-  - asserts zero runtime dependencies
-  - syntax-checks every `src/`, `bin/`, `test/` script
-  - `# tests 94 / # pass 94`
-  - runs the Arnhem vertical slice
-  - calibration CLI refuses a synthetic fixture and accepts it with `--allow-synthetic`
-  - provenance job confirms `LICENSE`, `NOTICE.md` and the upstream SHA
-- First two runs: `35535133849` (15s) and `35535169906` (16s), both **success**.
+## CURRENT BLOCKERS
 
-## Session 2 — hardening + live data (branch `deepseek/hardening-live-v1`)
+- Real-world calibration: needs lawful field ground truth (see
+  `docs/REAL_WORLD_CALIBRATION_PROTOCOL.md`). Status: BLOCKED on data collection.
+- Cesium globe integration: not started (XYZ `xyz-cesium-globe` = BLOCKED).
+- Live reliability history: only single dated runs exist.
 
-- P0: confidence now evaluates agreement in **normalized** space
-  (`computeEvidenceConfidence`); cross-unit regression tests added.
-- P0: confidence renamed to **Evidence Quality** (`confidenceSemantics`), never a
-  probability; documented.
-- P0: `dataClass` (`live|synthetic|mixed|unknown`) propagated to estimates;
-  SYNTHETIC DEMO banner in CLI, HTML brief and simulator; tests assert it.
-- P1: two live-capable adapters — OVapi GTFS-RT vehicle positions (mobility) and
-  Open-Meteo current weather (context) — dependency-free; fixture-backed CI.
-- P1: bounded `httpFetch`, offline cache that never upgrades freshness.
-- P1: versioned methodology config `m0.2` + correlation damping for mobility.
-- Evidence Inspector (`explainEstimate`) in briefs and simulator.
-- Calibration protocol + source candidate/blocker docs; CI actions pinned to SHAs.
-- Tests: **94/94 pass**. Commits `7cafb90`, `eb8770c`.
+## NEXT
 
-## Session 3 — next experiments
+1. Cesium globe presentation layer (S42) — the only major unstarted feature.
+2. Calibration pilot (S39) — blocked on ground truth.
+3. Live-smoke reliability history (S43).
+4. Offline replay mode (S44).
 
-- NDW DATEX II unblocked: bounded forward-only streaming parser
-  (`src/argus/sources/adapters/datex.js`); live run parsed **20,532 sites** of a
-  ~217 MB file; Arnhem slice recorded as a small fixture; `ndw-traffic-live`
-  adapter added (mobility, CC0-1.0).
-- Offline workspace: `src/argus/workspace/store.js` (user-owned, persisted,
-  never upgrades freshness) + tests.
-- Analyst mode tab in the simulator: source provenance, adapter versions,
-  calibration status and live/synthetic separation.
-- Tests: **94/94 pass**. Commit `593abf8`.
-
-## Not yet done (do not claim otherwise)
-
-- Live adapters (NDW, OVapi, PDOK) — only synthetic fixtures exist.
-- Local persistence / true offline cache store.
-- Cesium globe integration or any UI.
-- Calibration against ground truth (none performed).
-- Perf budget documented at 2000 ms for 1000 observations (headless core only).
-- Upstream module import into this repo (no integration yet).
-- Remote GitHub repository (local git only; no push, no visibility decision).
+Continuation protocol: read STATE → `git status` → PRD.json → pick the highest
+unblocked story → implement → test → commit → update STATE.
