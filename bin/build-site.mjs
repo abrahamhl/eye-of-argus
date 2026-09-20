@@ -5,7 +5,7 @@
  *
  *   node bin/build-site.mjs
  */
-import { mkdirSync, writeFileSync, copyFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, copyFileSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -25,6 +25,14 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = join(HERE, '..', 'site');
 const FIXED_NOW = Date.parse('2026-09-20T18:00:00Z');
 const METHODOLOGY = METHODOLOGY_VERSION;
+
+/** Count test() calls so the published number can never drift from reality. */
+function countTests() {
+  const dir = join(HERE, '..', 'test');
+  return readdirSync(dir)
+    .filter((file) => file.endsWith('.test.mjs'))
+    .reduce((total, file) => total + (readFileSync(join(dir, file), 'utf8').match(/^test\(/gm) || []).length, 0);
+}
 
 function round(value, digits = 2) {
   return value === null || value === undefined ? null : Number(value.toFixed(digits));
@@ -156,7 +164,7 @@ const data = {
     url: 'https://github.com/bilawalsidhu/gods-eye-view',
   },
   evidence: {
-    tests: 65,
+    tests: countTests(),
     runtimeDependencies: 0,
     ci: 'GitHub Actions — Node 20.x + 22.x, offline, deterministic',
     repo: 'https://github.com/abrahamhl/eye-of-argus',

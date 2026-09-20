@@ -4,12 +4,19 @@
  *
  *   node bin/verify-site.mjs
  */
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = join(ROOT, 'site');
+
+function countTests() {
+  const dir = join(ROOT, 'test');
+  return readdirSync(dir)
+    .filter((file) => file.endsWith('.test.mjs'))
+    .reduce((total, file) => total + (readFileSync(join(dir, file), 'utf8').match(/^test\(/gm) || []).length, 0);
+}
 
 const failures = [];
 function check(condition, message) { if (!condition) failures.push(message); }
@@ -47,6 +54,7 @@ if (data) {
   check(data.synthetic === true, 'demo data must be marked synthetic');
   check(data.dataClass === 'synthetic', 'data.dataClass must be synthetic for the demo');
   check(Number.isInteger(data.evidence?.tests) && data.evidence.tests > 0, 'evidence.tests missing');
+  check(data.evidence?.tests === countTests(), `site test count ${data.evidence?.tests} != source count ${countTests()}`);
   check(data.evidence?.runtimeDependencies === 0, 'runtime dependencies must be zero');
   check(Array.isArray(data.xyz) && data.xyz.length >= 3, 'xyz statements missing');
   check(data.upstream?.sha?.length === 40, 'upstream sha is not a full 40-char commit');
