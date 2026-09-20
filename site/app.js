@@ -124,6 +124,7 @@ function metricCard(label, signal, accent) {
   const bandClass = String(signal.band).replace(' ', '-');
   const range = signal.range ? `${signal.range.low}–${signal.range.high}` : 'n/a';
   const pct = signal.score === null ? 0 : signal.score;
+  const dc = String(signal.dataClass ?? 'unknown').toUpperCase();
   return `<div class="metric">
     <div class="head">
       <span class="label">${label}</span>
@@ -131,7 +132,7 @@ function metricCard(label, signal, accent) {
     </div>
     <div class="value" style="color:${accent}">${fmt(signal.score)}</div>
     <div class="gauge"><i style="width:${pct}%;background:${accent}"></i></div>
-    <div class="foot"><span>range ${range}</span><span>confidence ${signal.confidence}</span></div>
+    <div class="foot"><span>range ${range}</span><span>${dc === 'LIVE' ? 'live' : dc} · evidence conf ${signal.confidence}</span></div>
   </div>`;
 }
 
@@ -480,6 +481,7 @@ async function boot() {
   const res = await fetch('data.json', { cache: 'no-store' });
   state.data = await res.json();
   state.venueId = state.data.profiles[state.profile].places[0].id;
+  if (state.data.synthetic) q('synthetic-banner').hidden = false;
   renderChips();
   renderTabs();
   renderAll();

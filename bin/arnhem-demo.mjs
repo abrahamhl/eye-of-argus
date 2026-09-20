@@ -18,6 +18,7 @@ import { calmIndex } from '../src/argus/calm/calmIndex.js';
 import { socialOpportunity } from '../src/argus/social/socialOpportunity.js';
 import { forecast } from '../src/argus/forecast/temporal.js';
 import { buildPlaceBrief } from '../src/argus/reports/placeBrief.js';
+import { METHODOLOGY_VERSION } from '../src/argus/config/methodology.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, '..', 'out');
@@ -96,6 +97,10 @@ function main() {
 
   mkdirSync(OUT, { recursive: true });
   const lines = [];
+  lines.push('******************************************************************');
+  lines.push('*  SYNTHETIC DEMO — NOT LIVE TELEMETRY                            *');
+  lines.push('*  Arnhem values below are synthetic development fixtures only.   *');
+  lines.push('******************************************************************');
   lines.push('EYE OF ARGUS — Arnhem vertical slice (synthetic, offline)');
   lines.push(`now=${new Date(nowMs).toISOString()}  profile=${PROFILE.COMMERCIAL_SAFE}`);
   lines.push('');
@@ -119,7 +124,7 @@ function main() {
       sources: contributingSources(registry, signals),
       excludedSources: excluded.map((id) => ({ id, reason: `excluded by ${PROFILE.COMMERCIAL_SAFE} licence profile` })),
       generatedAtMs: nowMs,
-      methodologyVersion: 'm0.1',
+      methodologyVersion: METHODOLOGY_VERSION,
       commercialProfile: PROFILE.COMMERCIAL_SAFE,
       mode: 'BALANCED',
       runId: 'arnhem-slice-001',

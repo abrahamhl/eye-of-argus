@@ -1,4 +1,5 @@
 import { bandFor } from '../confidence/confidence.js';
+import { CONFIG } from '../config/methodology.js';
 
 export const DEFAULT_HORIZONS = Object.freeze([0, 15, 30, 60]);
 
@@ -16,6 +17,7 @@ function interpolatePrior(priorsByHour, hourFloat) {
  * Temporal engine. Estimates NOW / +15 / +30 / +60 from a current fused score,
  * an hourly historical prior and a growing uncertainty. Model error is never
  * hidden: uncertainty widens with the horizon and confidence decays with it.
+ * Coefficients come from the versioned methodology config.
  */
 export function forecast({
   currentScore,
@@ -23,8 +25,8 @@ export function forecast({
   priorsByHour,
   nowMs,
   horizons = DEFAULT_HORIZONS,
-  priorWeightMinutes = 45,
-  uncertaintyPerMinute = 0.22,
+  priorWeightMinutes = CONFIG.forecast.priorWeightMinutes,
+  uncertaintyPerMinute = CONFIG.forecast.uncertaintyPerMinute,
 }) {
   const hourFloatNow = (nowMs / 3_600_000) % 24;
   return horizons.map((horizonMinutes) => {
@@ -33,8 +35,10 @@ export function forecast({
     const score = currentScore === null
       ? prior
       : decay * currentScore + (1 - decay) * prior;
-    const confidence = Number((currentConfidence * Math.exp(-horizonMinutes / 90)).toFixed(3));
-    const halfWidth = Math.round(4 + (1 - confidence) * 22 + horizonMinutes * uncertaintyPerMinute);
+    const confidence = Number((currentConfidence * Math.exp(-horizonMinutes / CONFIG.forecast.confidenceHalfLifeMinutes)).toFixed(3));
+    const halfWidth = Math.round(
+      CONFIG.forecast.baseHalfWidth + (1 - confidence) * CONFIG.forecast.confidenceHalfWidth + horizonMinutes * uncertaintyPerMinute,
+    );
     return {
       horizonMinutes,
       label: horizonMinutes === 0 ? 'NOW' : `+${horizonMinutes}m`,

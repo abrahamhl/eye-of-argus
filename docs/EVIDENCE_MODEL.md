@@ -25,17 +25,33 @@ fail the test in `test/verticalSlice.test.mjs`.
 
 ## Confidence rule
 
-Confidence is a function of **evidence quality only** (source prior × freshness,
-provider coverage, agreement). It is never a function of the crowd score.
-States: `VERIFIED · SUPPORTED · INFERRED · UNKNOWN · CONTRADICTED`.
+The confidence number is **Evidence Quality Confidence**, i.e. how good the
+evidence behind an estimate is. It is **not** a calibrated probability and must
+never be read as "X% chance the estimate is correct". Calibrated probability
+requires ground-truth calibration (`docs/CALIBRATION.md`) and does not exist yet.
 
-- All-inferred evidence is capped below `VERIFIED` (`computeConfidence`).
-- Dispersion is the **range** of contributing values relative to the 0..100
-  scale (scale-free), so equal absolute disagreement yields equal confidence at
-  low and high magnitude. A spread above 60 points yields `CONTRADICTED`.
+Confidence is a function of evidence quality only (source prior × freshness,
+provider coverage, agreement). It is never a function of the score's magnitude.
+
+- **Agreement is measured on NORMALIZED values (0..100), never on raw values.**
+  Raw readings with different units (vehicles/hour, %, arrivals, dB) are not
+  comparable; dispersion over raw values would be meaningless. The fusion engine
+  passes the same normalized contributions it used for the score, so confidence
+  always describes agreement within one estimated signal.
+- Dispersion is the normalized value range relative to the 0..100 scale. A spread
+  above 60 points yields `CONTRADICTED`.
+- All-inferred evidence is capped below `VERIFIED` (`computeEvidenceConfidence`).
 - AI/adapter output may not set `confidence` to promote an inferred observation.
 - A `CONTRADICTED` estimate keeps its band but is visually downgraded and the
   brief states the sources disagree.
+- Every estimate also carries `confidenceSemantics: 'evidence-quality'` and a
+  `dataClass` (`live` | `synthetic` | `mixed` | `unknown`), so synthetic output
+  can never masquerade as live.
+
+States: `VERIFIED · SUPPORTED · INFERRED · UNKNOWN · CONTRADICTED`.
+
+Coefficients live in `src/argus/config/methodology.js` (currently `m0.2`,
+HEURISTIC).
 
 ## Calm traceability
 

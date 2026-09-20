@@ -9,7 +9,7 @@ import { createRegistry } from '../../sources/registry.js';
  * the same manifest/observation contract.
  */
 
-const MANIFESTS = [
+const RAW_MANIFESTS = [
   createManifest({
     id: 'ndw-traffic',
     provider: 'NDW (Nationale Databank Wegverkeersgegevens)',
@@ -156,6 +156,10 @@ const MANIFESTS = [
     confidencePrior: 0.5,
   }),
 ];
+
+// Every source in this demo fixture is synthetic development data. dataClass is
+// propagated to estimates and must surface as "SYNTHETIC DEMO" everywhere.
+const MANIFESTS = RAW_MANIFESTS.map((m) => Object.freeze({ ...m, dataClass: 'synthetic' }));
 
 const SOURCE_URLS = Object.fromEntries(
   MANIFESTS.map((m) => [m.id, { sourceURL: m.sourceURL, termsURL: m.termsURL }]),

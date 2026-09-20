@@ -9,6 +9,7 @@ import { socialOpportunity } from '../src/argus/social/socialOpportunity.js';
 import { forecast } from '../src/argus/forecast/temporal.js';
 import { traceSources } from '../src/argus/evidence/evidence.js';
 import { buildPlaceBrief } from '../src/argus/reports/placeBrief.js';
+import { METHODOLOGY_VERSION } from '../src/argus/config/methodology.js';
 
 const NOW = Date.parse('2026-09-20T18:00:00Z');
 
@@ -108,20 +109,21 @@ test('the place brief is traceable and states its limits and method', () => {
     sources: fixture.registry.all(),
     excludedSources: [{ id: 'arnhem-events', reason: 'excluded by COMMERCIAL_SAFE licence profile' }],
     generatedAtMs: NOW,
-    methodologyVersion: 'm0.1',
+    methodologyVersion: METHODOLOGY_VERSION,
     commercialProfile: PROFILE.COMMERCIAL_SAFE,
     mode: 'CALM',
     limitations: ['synthetic fixture only'],
   });
   assert.equal(brief.json.kind, 'place-brief');
-  assert.equal(brief.json.methodologyVersion, 'm0.1');
+  assert.equal(brief.json.methodologyVersion, METHODOLOGY_VERSION);
   assert.equal(brief.json.sources.length, fixture.registry.size());
   assert.ok(brief.json.limitations.length > 0);
   assert.equal(brief.json.excludedSources[0].id, 'arnhem-events');
   assert.match(brief.html, /Excluded by licence profile/);
   assert.match(brief.html, /arnhem-events/);
   assert.match(brief.html, /Eye of Argus/);
-  assert.match(brief.html, /m0\.1/);
+  assert.match(brief.html, new RegExp(METHODOLOGY_VERSION.replace('.', '\\.')));
+  assert.match(brief.html, /SYNTHETIC DEMO/);
   assert.match(brief.html, /synthetic fixture only/);
   assert.doesNotMatch(brief.html, /\b\d+ (people|persons)\b/i);
 });

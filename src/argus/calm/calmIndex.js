@@ -1,6 +1,7 @@
 import { fuse } from '../fusion/fuse.js';
 import { createEstimate, createEvidenceRecord } from '../evidence/evidence.js';
-import { bandFor, CONFIDENCE_STATE } from '../confidence/confidence.js';
+import { bandFor, CONFIDENCE_STATE, CONFIDENCE_SEMANTICS } from '../confidence/confidence.js';
+import { CONFIG, METHODOLOGY_VERSION, configurationHash as hashConfig } from '../config/methodology.js';
 
 /**
  * Calm Index: estimated environmental/social calm, 0..100.
@@ -15,6 +16,15 @@ import { bandFor, CONFIDENCE_STATE } from '../confidence/confidence.js';
  * pointer to another estimate. When environmental evidence is missing, calm
  * falls back to crowd pressure but its confidence is capped.
  */
+function combineDataClass(classes) {
+  const known = classes.filter((c) => c && c !== 'unknown');
+  if (known.length === 0) return 'unknown';
+  if (known.includes('synthetic') && known.includes('live')) return 'mixed';
+  if (known.includes('synthetic')) return 'synthetic';
+  if (known.includes('mixed')) return 'mixed';
+  return 'live';
+}
+
 export function calmIndex({
   crowdEstimate,
   calmObservations,
@@ -22,9 +32,9 @@ export function calmIndex({
   nowMs,
   domains = {},
   invert = {},
-  methodologyVersion = 'm0.1',
+  methodologyVersion = METHODOLOGY_VERSION,
   runId = 'run-local',
-  configurationHash = 'cfg-local',
+  configurationHash = hashConfig(),
 }) {
   const environmental = calmObservations && calmObservations.length
     ? fuse({
@@ -44,8 +54,9 @@ export function calmIndex({
   const envScore = environmental && environmental.estimate.score !== null ? environmental.estimate.score : null;
 
   let score = null;
-  if (crowdPressure !== null && envScore !== null) score = 0.55 * crowdPressure + 0.45 * envScore;
-  else if (crowdPressure !== null) score = crowdPressure;
+  if (crowdPressure !== null && envScore !== null) {
+    score = CONFIG.calm.crowdWeight * crowdPressure + CONFIG.calm.environmentWeight * envScore;
+  } else if (crowdPressure !== null) score = crowdPressure;
   else if (envScore !== null) score = envScore;
 
   const crowdConfidence = crowdEstimate.confidence ?? 0;
@@ -53,7 +64,7 @@ export function calmIndex({
   if (crowdPressure !== null && envScore !== null) {
     confidence = Math.min(1, 0.5 * crowdConfidence + 0.5 * (environmental?.confidence.value ?? 0));
   } else if (crowdPressure !== null) {
-    confidence = Math.min(0.6, crowdConfidence);
+    confidence = Math.min(CONFIG.calm.noEnvironmentConfidenceCap, crowdConfidence);
   } else {
     confidence = environmental?.confidence.value ?? 0;
   }
@@ -95,6 +106,8 @@ export function calmIndex({
     range,
     confidence,
     confidenceState,
+    confidenceSemantics: CONFIDENCE_SEMANTICS,
+    dataClass: combineDataClass([crowdEstimate.dataClass, environmental?.estimate.dataClass]),
     evidence,
     computedAtMs: nowMs,
     methodologyVersion,

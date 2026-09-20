@@ -35,11 +35,13 @@ Four separate measures — never collapsed into one unexplained score:
 | **Crowd Index** (0–100) | How much human activity/density is estimated here? |
 | **Calm Index** (0–100) | How calm is this environment? (Not the inverse of crowd.) |
 | **Social Opportunity** (0–100) | How likely is meaningful *public* social activity right now? |
-| **Confidence** (0–1) | How good is the evidence behind the estimate? |
+| **Evidence Confidence** (0–1) | How good is the evidence behind the estimate? Evidence *quality* — **not** a calibrated probability. |
 
-Every estimate carries a range, a band (`LOW/MODERATE/HIGH/VERY HIGH`), a
-confidence and an evidence chain back to source manifests. No person counts are
-fabricated.
+Every estimate carries a range, a band (`LOW/MODERATE/HIGH/VERY HIGH`), an
+evidence-quality confidence and an evidence chain back to source manifests. No
+person counts are fabricated. Every estimate is also classed as
+`live | synthetic | mixed | unknown`; the Arnhem demo is **SYNTHETIC DEMO** and
+says so in the CLI, the brief and the simulator.
 
 ## Run it (offline)
 

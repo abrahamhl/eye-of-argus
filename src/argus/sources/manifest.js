@@ -45,11 +45,15 @@ export function createManifest(spec) {
   if (!['allowed', 'share-alike', 'prohibited'].includes(spec.redistribution)) {
     throw new Error(`manifest ${spec.id}: redistribution must be allowed|share-alike|prohibited`);
   }
+  if (spec.dataClass !== undefined && !['live', 'synthetic', 'unknown'].includes(spec.dataClass)) {
+    throw new Error(`manifest ${spec.id}: dataClass must be live|synthetic|unknown`);
+  }
   return Object.freeze({
     spatialResolution: 'unknown',
     authentication: 'none',
     rateLimit: 'unspecified',
     retrievedAt: null,
+    dataClass: 'unknown',
     ...spec,
   });
 }

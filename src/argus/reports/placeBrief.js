@@ -58,6 +58,14 @@ export function buildPlaceBrief({
     contributions: signal.contributions ?? [],
   }));
 
+  const classes = signalRows.map((r) => r.estimate.dataClass ?? 'unknown');
+  let dataClass;
+  if (classes.includes('mixed') || (classes.includes('synthetic') && classes.includes('live'))) dataClass = 'mixed';
+  else if (classes.includes('synthetic')) dataClass = 'synthetic';
+  else if (classes.length > 0 && classes.every((c) => c === 'live')) dataClass = 'live';
+  else dataClass = 'unknown';
+  const synthetic = dataClass === 'synthetic' || dataClass === 'mixed';
+
   const json = {
     kind: 'place-brief',
     version: 1,
@@ -68,13 +76,15 @@ export function buildPlaceBrief({
     methodologyVersion,
     runId,
     configurationHash,
+    dataClass,
+    synthetic,
     signals: signalRows,
     sources,
     excludedSources,
     limitations,
   };
 
-  const html = renderHtml({ place, mode, commercialProfile, generatedAtMs, methodologyVersion, runId, configurationHash, signalRows, sourceIndex, excludedSources, limitations });
+  const html = renderHtml({ place, mode, commercialProfile, generatedAtMs, methodologyVersion, runId, configurationHash, signalRows, sourceIndex, excludedSources, limitations, dataClass });
   return { json, html };
 }
 
@@ -103,7 +113,7 @@ function renderSignal(name, signalRow, sourceIndex) {
 
   return `
   <section class="signal ${cls}">
-    <h3>${escapeHtml(name)} — ${escapeHtml(estimate.band)} <span class="state">${escapeHtml(estimate.confidenceState ?? '')}</span></h3>
+    <h3>${escapeHtml(name)} — ${escapeHtml(estimate.band)} <span class="state">${escapeHtml(estimate.confidenceState ?? '')}</span> <span class="state">${escapeHtml(String(estimate.dataClass ?? 'unknown').toUpperCase())}</span></h3>
     <p class="score">${scoreText} <span class="conf">confidence ${estimate.confidence}</span></p>
     <table>
       <thead><tr><th>Horizon</th><th>Estimate</th><th>Band</th><th>Confidence</th></tr></thead>
@@ -119,10 +129,13 @@ function renderSignal(name, signalRow, sourceIndex) {
   </section>`;
 }
 
-function renderHtml({ place, mode, commercialProfile, generatedAtMs, methodologyVersion, runId, configurationHash, signalRows, sourceIndex, excludedSources, limitations }) {
+function renderHtml({ place, mode, commercialProfile, generatedAtMs, methodologyVersion, runId, configurationHash, signalRows, sourceIndex, excludedSources, limitations, dataClass }) {
   const excluded = excludedSources.length
     ? `<section><h3>Excluded by licence profile (${escapeHtml(commercialProfile)})</h3><ul>${excludedSources.map((e) => `<li>${escapeHtml(e.id)} — ${escapeHtml(e.reason)}</li>`).join('')}</ul></section>`
     : '';
+  const banner = dataClass === 'live'
+    ? ''
+    : `<div class="banner">${dataClass === 'unknown' ? 'DATA CLASS UNKNOWN — NOT VERIFIED LIVE' : 'SYNTHETIC DEMO — NOT LIVE TELEMETRY'}</div>`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -144,10 +157,12 @@ function renderHtml({ place, mode, commercialProfile, generatedAtMs, methodology
   tr.demoted { opacity:0.45; text-decoration: line-through; }
   .meta { color:#8aa0b4; }
   .privacy { border:1px solid #3b2f5f; background:#160f2a; padding:0.5rem 1rem; border-radius:8px; }
+  .banner { border:2px solid #f59e0b; background:#2a1c05; color:#fde68a; padding:0.7rem 1rem; border-radius:8px; font-weight:bold; letter-spacing:2px; margin:0.5rem 0 1rem; text-align:center; }
 </style>
 </head>
 <body>
 <h1>Eye of Argus — Place Brief</h1>
+${banner}
 <p class="meta">
   <strong>${escapeHtml(place.name)}</strong> (${place.lat.toFixed(5)}, ${place.lon.toFixed(5)}) ·
   mode <strong>${escapeHtml(mode)}</strong> ·

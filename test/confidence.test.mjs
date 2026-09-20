@@ -1,90 +1,62 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeConfidence, bandFor, CONFIDENCE_STATE } from '../src/argus/confidence/confidence.js';
-import { mkManifest, mkObs, manifestsById, NOW } from './helpers.mjs';
+import { computeEvidenceConfidence, bandFor, CONFIDENCE_STATE, CONFIDENCE_SEMANTICS } from '../src/argus/confidence/confidence.js';
 
-test('no observations yields UNKNOWN with zero confidence', () => {
-  const result = computeConfidence({ observations: [], manifestsById: {}, nowMs: NOW });
+function c(normalizedValue, { weight = 0.8, provider = 'A', freshness = 'LIVE', kind = 'observed' } = {}) {
+  return { normalizedValue, weight, provider, freshness, kind };
+}
+
+test('no contributions yields UNKNOWN with zero evidence confidence', () => {
+  const result = computeEvidenceConfidence({ contributions: [] });
   assert.equal(result.value, 0);
   assert.equal(result.state, CONFIDENCE_STATE.UNKNOWN);
+  assert.equal(result.semantics, CONFIDENCE_SEMANTICS);
+});
+
+test('the returned number is labelled evidence-quality, never a probability', () => {
+  const result = computeEvidenceConfidence({ contributions: [c(50)] });
+  assert.equal(result.semantics, 'evidence-quality');
 });
 
 test('all-inferred evidence is capped below VERIFIED and labelled INFERRED', () => {
-  const manifests = [
-    mkManifest({ id: 'a', provider: 'A', confidencePrior: 0.95 }),
-    mkManifest({ id: 'b', provider: 'B', confidencePrior: 0.95 }),
-    mkManifest({ id: 'c', provider: 'C', confidencePrior: 0.95 }),
-  ];
-  const observations = [
-    mkObs({ sourceId: 'a', value: 50, kind: 'inferred' }),
-    mkObs({ sourceId: 'b', value: 50, kind: 'inferred' }),
-    mkObs({ sourceId: 'c', value: 50, kind: 'inferred' }),
-  ];
-  const result = computeConfidence({ observations, manifestsById: manifestsById(...manifests), nowMs: NOW });
-  assert.ok(result.value <= 0.5, `expected cap, got ${result.value}`);
+  const result = computeEvidenceConfidence({
+    contributions: [c(50, { provider: 'A', kind: 'inferred' }), c(50, { provider: 'B', kind: 'inferred' }), c(50, { provider: 'C', kind: 'inferred' })],
+  });
+  assert.ok(result.value <= 0.5);
   assert.equal(result.state, CONFIDENCE_STATE.INFERRED);
 });
 
-test('contradictory live evidence is flagged CONTRADICTED', () => {
-  const manifests = [
-    mkManifest({ id: 'a', provider: 'A' }),
-    mkManifest({ id: 'b', provider: 'B' }),
-    mkManifest({ id: 'c', provider: 'C' }),
-  ];
-  const observations = [
-    mkObs({ sourceId: 'a', value: 0 }),
-    mkObs({ sourceId: 'b', value: 100 }),
-    mkObs({ sourceId: 'c', value: 50 }),
-  ];
-  const result = computeConfidence({ observations, manifestsById: manifestsById(...manifests), nowMs: NOW });
+test('contradictory normalized evidence is flagged CONTRADICTED', () => {
+  const result = computeEvidenceConfidence({
+    contributions: [c(15, { provider: 'A' }), c(82, { provider: 'B' }), c(45, { provider: 'C' })],
+  });
   assert.equal(result.state, CONFIDENCE_STATE.CONTRADICTED);
 });
 
-test('small absolute disagreement is not CONTRADICTED', () => {
-  const manifests = [mkManifest({ id: 'a', provider: 'A' }), mkManifest({ id: 'b', provider: 'B' })];
-  const observations = [mkObs({ sourceId: 'a', value: 0 }), mkObs({ sourceId: 'b', value: 2 })];
-  const result = computeConfidence({ observations, manifestsById: manifestsById(...manifests), nowMs: NOW });
+test('agreeing live normalized evidence from several providers can reach VERIFIED', () => {
+  const result = computeEvidenceConfidence({
+    contributions: [c(50, { provider: 'A', weight: 0.9 }), c(50, { provider: 'B', weight: 0.9 }), c(50, { provider: 'C', weight: 0.9 })],
+  });
+  assert.equal(result.state, CONFIDENCE_STATE.VERIFIED);
+  assert.ok(result.value >= 0.8);
+});
+
+test('small normalized disagreement is not CONTRADICTED', () => {
+  const result = computeEvidenceConfidence({ contributions: [c(0, { provider: 'A' }), c(2, { provider: 'B' })] });
   assert.notEqual(result.state, CONFIDENCE_STATE.CONTRADICTED);
 });
 
-test('identical zero readings are agreement, not contradiction', () => {
-  const manifests = [mkManifest({ id: 'a', provider: 'A' }), mkManifest({ id: 'b', provider: 'B' })];
-  const observations = [mkObs({ sourceId: 'a', value: 0 }), mkObs({ sourceId: 'b', value: 0 })];
-  const result = computeConfidence({ observations, manifestsById: manifestsById(...manifests), nowMs: NOW });
+test('identical zero normalized readings are agreement, not contradiction', () => {
+  const result = computeEvidenceConfidence({ contributions: [c(0, { provider: 'A' }), c(0, { provider: 'B' })] });
   assert.equal(result.dispersion, 0);
   assert.notEqual(result.state, CONFIDENCE_STATE.CONTRADICTED);
 });
 
-test('the same absolute spread yields the same confidence at low and high magnitude', () => {
-  const manifests = [mkManifest({ id: 'a', provider: 'A' }), mkManifest({ id: 'b', provider: 'B' })];
-  const low = computeConfidence({
-    observations: [mkObs({ sourceId: 'a', value: 10 }), mkObs({ sourceId: 'b', value: 12 })],
-    manifestsById: manifestsById(...manifests),
-    nowMs: NOW,
-  });
-  const high = computeConfidence({
-    observations: [mkObs({ sourceId: 'a', value: 90 }), mkObs({ sourceId: 'b', value: 92 })],
-    manifestsById: manifestsById(...manifests),
-    nowMs: NOW,
-  });
+test('the same normalized spread yields the same confidence regardless of scale', () => {
+  const low = computeEvidenceConfidence({ contributions: [c(10, { provider: 'A' }), c(12, { provider: 'B' })] });
+  const high = computeEvidenceConfidence({ contributions: [c(90, { provider: 'A' }), c(92, { provider: 'B' })] });
   assert.equal(low.dispersion, high.dispersion);
   assert.equal(low.value, high.value);
-});
-
-test('agreeing live sources from several providers can reach VERIFIED', () => {
-  const manifests = [
-    mkManifest({ id: 'a', provider: 'A', confidencePrior: 0.9 }),
-    mkManifest({ id: 'b', provider: 'B', confidencePrior: 0.9 }),
-    mkManifest({ id: 'c', provider: 'C', confidencePrior: 0.9 }),
-  ];
-  const observations = [
-    mkObs({ sourceId: 'a', value: 50 }),
-    mkObs({ sourceId: 'b', value: 50 }),
-    mkObs({ sourceId: 'c', value: 50 }),
-  ];
-  const result = computeConfidence({ observations, manifestsById: manifestsById(...manifests), nowMs: NOW });
-  assert.equal(result.state, CONFIDENCE_STATE.VERIFIED);
-  assert.ok(result.value >= 0.8);
 });
 
 test('bandFor boundaries are correct', () => {

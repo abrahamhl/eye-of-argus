@@ -17,11 +17,12 @@ import { socialOpportunity } from '../src/argus/social/socialOpportunity.js';
 import { forecast } from '../src/argus/forecast/temporal.js';
 import { traceSources } from '../src/argus/evidence/evidence.js';
 import { aggregateSpatialGrid, suppressCell } from '../src/argus/privacy/suppression.js';
+import { METHODOLOGY_VERSION } from '../src/argus/config/methodology.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = join(HERE, '..', 'site');
 const FIXED_NOW = Date.parse('2026-09-20T18:00:00Z');
-const METHODOLOGY = 'm0.1';
+const METHODOLOGY = METHODOLOGY_VERSION;
 
 function round(value, digits = 2) {
   return value === null || value === undefined ? null : Number(value.toFixed(digits));
@@ -53,6 +54,8 @@ function signalFor(signal, fixture) {
     range: signal.estimate.range,
     confidence: signal.estimate.confidence,
     confidenceState: signal.estimate.confidenceState ?? null,
+    confidenceSemantics: signal.estimate.confidenceSemantics ?? 'evidence-quality',
+    dataClass: signal.estimate.dataClass ?? 'unknown',
     derivedFrom: signal.estimate.derivedFromEstimateIds ?? [],
     evidenceIds: signal.estimate.evidenceIds,
     forecast: series,
@@ -139,6 +142,8 @@ const fixture = createArnhemFixture(FIXED_NOW);
 const data = {
   product: 'Eye of Argus',
   motto: 'OFFLINE FIRST FOR SURE',
+  dataClass: 'synthetic',
+  synthetic: true,
   generatedAt: new Date(FIXED_NOW).toISOString(),
   methodologyVersion: METHODOLOGY,
   upstream: {
