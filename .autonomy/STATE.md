@@ -31,6 +31,15 @@ node --test test/*.test.mjs
 ## Deployment
 
 - Public repository: https://github.com/abrahamhl/eye-of-argus (branch `main`).
+- **Live simulator (GitHub Pages):** https://abrahamhl.github.io/eye-of-argus/
+  - `site/` is a dependency-free static HUD (canvas radar, per-metric views,
+    forecast, evidence drill-down, licence engine, privacy suppression,
+    investor XYZ view).
+  - `bin/build-site.mjs` generates `site/data.json` from the real core at a
+    fixed clock; `bin/verify-site.mjs` gates the artifact.
+  - Pages workflow: build → verify → upload → deploy (runs on `main`).
+  - Latest verified: `CI` and `Pages` runs both **success**; site returns 200;
+    deployed `data.json` = product Eye of Argus, tests 65, deps 0, 2 places, 5 XYZ.
 - CI workflow `.github/workflows/ci.yml` runs on push/PR/manual, Node 20.x and
   22.x, and is **verified green** on GitHub:
   - asserts zero runtime dependencies

@@ -6,6 +6,11 @@ A privacy-preserving, **offline-first** geospatial intelligence and human-contex
 engine. It fuses heterogeneous public sources through a disciplined adapter
 architecture to estimate human activity — and it shows its evidence.
 
+**Live simulator:** https://abrahamhl.github.io/eye-of-argus/ — a static,
+dependency-free HUD that renders the real core's output for Arnhem (per-metric
+views, forecast, evidence drill-down, licence engine, privacy suppression, and
+an investor XYZ view).
+
 > Eye of Argus is an original derivative of the MIT-licensed
 > [`bilawalsidhu/gods-eye-view`](https://github.com/bilawalsidhu/gods-eye-view).
 > Upstream is credited and pinned by commit SHA in
@@ -41,6 +46,8 @@ fabricated.
 ```bash
 node bin/arnhem-demo.mjs      # first vertical slice: Arnhem, synthetic
 node --test test/*.test.mjs   # 65 deterministic tests, no network
+node bin/build-site.mjs       # generate the Pages simulator data from the core
+node bin/verify-site.mjs      # gate the simulator artifact
 ```
 
 The demo prints Crowd/Calm/Social for two nearby destinations, forecasts

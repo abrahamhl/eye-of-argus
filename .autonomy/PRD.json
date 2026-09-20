@@ -42,7 +42,8 @@
     { "id": "S28", "title": "Performance audit (headless core)", "status": "done", "artifact": "test/perf.test.mjs", "note": "visual audit still deferred until UI integration" },
     { "id": "S29", "title": "README/case study", "status": "done", "artifact": "docs/CASE_STUDY.md" },
     { "id": "S30", "title": "Adversarial product/engineering review", "status": "done", "artifact": ".autonomy/ERRORS.md", "note": "13 findings; critical/high fixed; residual items listed" },
-    { "id": "S31", "title": "Publish to GitHub with verified CI", "status": "done", "artifact": ".github/workflows/ci.yml", "evidence": "public repo; Node 20.x + 22.x; runs 35535133849 and 35535169906 success" }
+    { "id": "S31", "title": "Publish to GitHub with verified CI", "status": "done", "artifact": ".github/workflows/ci.yml", "evidence": "public repo; Node 20.x + 22.x; runs 35535133849 and 35535169906 success" },
+    { "id": "S32", "title": "GitHub Pages next-gen simulator + investor XYZ", "status": "done", "artifact": "site/ + bin/build-site.mjs + bin/verify-site.mjs", "evidence": "Pages run 35535759256 success; live at https://abrahamhl.github.io/eye-of-argus/" }
   ],
   "nextStories": ["S03", "S27", "S28", "S30", "S29", "S19"]
 }
