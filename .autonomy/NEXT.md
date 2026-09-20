@@ -2,28 +2,30 @@
 
 Execute top-down. Each story: implement → test → commit → update STATE.
 
-## S30 — Adversarial review of the core
-- Independent reviewer inspects `src/argus/**` and `test/**`.
-- Challenge the tests themselves: do they assert real behaviour or tautologies?
-- Record findings in `.autonomy/ERRORS.md`; open follow-ups as new stories.
-- Status: IN PROGRESS (see ERRORS.md additions).
+## S33 — NDW DATEX II adapter (blocked)
+- Need a bounded, streaming, zero-dependency DATEX II reader.
+- Deliverable: `ndw-traffic-live` adapter + recorded fixture + tests.
+- Documented blocker in `docs/SOURCE_CANDIDATES.md`.
 
-## S03 — Reproduce CalmPath donor check/build (forensics)
-- Command: `cd C:\dev\recruiter-evidence\calmpath-maps-pro; corepack prepare pnpm@10.4.1 --activate; pnpm install --frozen-lockfile; pnpm check; pnpm build`
-- Deliverable: `docs/DONOR_NOTES.md` — reusable concepts vs intentionally excluded components (no React import).
-- No secrets required.
+## S34 — Calibration pilot
+- Run `docs/REAL_WORLD_CALIBRATION_PROTOCOL.md` on 10–20 Arnhem sites.
+- Publish N, confusion matrix, Brier, ECE — or keep NOT YET CALIBRATED.
+- No ground truth → do not start.
 
-## S19 — Confidence UI
-- Blocked until a UI-integration story is scoped against upstream's globe.
+## S35 — Persisted offline workspace
+- Save places/areas + last-known observations locally; reuse `offlineCache`.
+- UI must show CACHED/STALE.
 
-## S24 — Real offline/cache store
-- Persist last-known observations + registry to a local store; keep freshness states.
-- Must never surface cached data as live. Tests must cover the offline path.
+## S36 — Cesium globe integration
+- Separate presentation boundary; reuse upstream visual architecture with
+  attribution. Do not import upstream wholesale.
 
-## S12/S13 — Live adapters (NDW, OVapi)
-- Replace synthetic fixtures with server-side fetchers behind the existing manifest/observation contract.
-- Requires server key-broker pattern from upstream; no keys committed.
-- Smoke tests stay separate from deterministic CI.
+## S37 — Analyst mode
+- Source provenance, temporal history, cross-source corroboration view.
+
+## S38 — Live smoke on schedule
+- Already added (`.github/workflows/live-smoke.yml`); observe a few runs and
+  record provider reliability in SOURCE_CANDIDATES.
 
 ## Continuation protocol
 1. Read STATE.md; `git status`; read PRD.json.

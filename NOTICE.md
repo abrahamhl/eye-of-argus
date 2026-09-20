@@ -1,6 +1,8 @@
 # Attribution
 
-Eye of Argus is an original derivative of:
+Eye of Argus is **an original derivative integrating concepts from** God's Eye
+View. It is **not technically a GitHub fork** of that repository, and we do not
+claim fork status; the relationship is an explicit code/concept derivative:
 
 - **God's Eye View** — https://github.com/bilawalsidhu/gods-eye-view
   Copyright (c) 2026 Bilawal Sidhu, MIT licensed.

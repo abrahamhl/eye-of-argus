@@ -1,0 +1,92 @@
+# AUDIT_FINAL — Eye of Argus hardening, live data & product integration
+
+Branch: `deepseek/hardening-live-v1` (based on `main` @ `f735316`).
+Date: 2026-09-20. Model: DeepSeek V4.1 Flash.
+
+## Commits on this branch
+
+| SHA | Subject |
+|---|---|
+| `7cafb90` | fix(confidence): evaluate agreement in normalized space (P0) |
+| `eb8770c` | feat(adapters): real GTFS-RT and Open-Meteo sources with offline cache (P1) |
+| _(this commit)_ | docs/audit: calibration protocol, source candidates, CI pinning, AUDIT_FINAL |
+
+Baseline before this branch: `f735316` (public repo `abrahamhl/eye-of-argus`,
+65 tests, CI + Pages green).
+
+## Commands run and actual results
+
+| Command | Result |
+|---|---|
+| `node --test test/*.test.mjs` | **85 tests, 85 pass, 0 fail** |
+| `node bin/arnhem-demo.mjs` | prints `SYNTHETIC DEMO` banner; writes briefs to `out/` |
+| `node bin/build-site.mjs` | writes `site/data.json` from the core |
+| `node bin/verify-site.mjs` | `site verification OK` |
+| `node bin/fetch-live-fixtures.mjs` | recorded GTFS-RT (1292 vehicles → 31 in Arnhem bbox) + Open-Meteo |
+| `node bin/live-smoke.mjs` | opt-in live check; **not** part of CI |
+
+CI (GitHub Actions) after push to this branch: see the run linked on the branch.
+Deterministic jobs use fixtures only; `live-smoke.yml` is separate (manual/cron).
+
+## Acceptance gates
+
+| # | Gate | Status |
+|---|---|---|
+| 1 | Confidence raw-unit bug fixed | ✅ `computeEvidenceConfidence` consumes normalized contributions |
+| 2 | Regression tests pass | ✅ cross-unit agreement/contradiction tests added |
+| 3 | Evidence Confidence semantics corrected | ✅ `confidenceSemantics: 'evidence-quality'`; docs say not a probability |
+| 4 | Synthetic/demo outputs unmistakably marked | ✅ CLI banner, brief banner + JSON, simulator banner, tests |
+| 5 | ≥2 real-data adapters **or** documented blocker | ✅ OVapi GTFS-RT + Open-Meteo (live-capable); NDW DATEX II documented blocker |
+| 6 | Offline cache/freshness works | ✅ cache fallback keeps original timestamp → CACHED/STALE, never LIVE |
+| 7 | Live and deterministic tests separated | ✅ CI = fixtures; `live-smoke.yml` = network |
+| 8 | First visual workflow works | ✅ Pages simulator: select place, per-metric views, forecast, evidence, licence, privacy, compare, brief |
+| 9 | Evidence drill-down works | ✅ Evidence Inspector (raw → normalized → base × corr → effective), explains Crowd=73 |
+| 10 | God's Eye View attribution accurate | ✅ MIT credit + pinned SHA in NOTICE/PROVENANCE |
+| 11 | No fake GitHub fork claim | ✅ NOTICE/README state it is **not** a GitHub fork |
+| 12 | COMMERCIAL_SAFE enforced | ✅ NC/ND denylist + profile filtering, tested |
+| 13 | No fake accuracy claims | ✅ calibration status = NOT YET CALIBRATED |
+| 14 | Calibration protocol exists | ✅ `docs/REAL_WORLD_CALIBRATION_PROTOCOL.md` |
+| 15 | Clean CI passes | see branch CI (tested locally: 85/85) |
+
+## Live sources implemented
+
+- **`ovapi-transit-live`** — `https://gtfs.ovapi.nl/nl/vehiclePositions.pb`
+  (OVapi / Stichting OpenGeo, CC-BY-4.0, keyless). Protobuf parsed with a
+  dependency-free reader; coordinates only. Contributes mobility pressure.
+- **`open-meteo-live`** — `https://api.open-meteo.com/v1/forecast`
+  (Open-Meteo, CC-BY-4.0, keyless). Contributes outdoor calm context.
+
+Both are fixture-backed in CI; live mode is opt-in via `bin/live-smoke.mjs`.
+
+## Sources rejected / blocked
+
+- **NDW DATEX II** — large streaming XML; blocked on a robust zero-dependency
+  parser. Documented, not faked.
+- **`https://v0.ovapi.nl/`** — connection failed on probe.
+- **Social platforms** — no compliant aggregate interface; `UNAVAILABLE`.
+- **Wi-Fi/BLE/MAC scanning, through-wall monitoring** — prohibited by design.
+
+## Known limitations
+
+- No calibration against ground truth; every confidence value is evidence
+  quality, not probability.
+- Arnhem demo is entirely synthetic (`dataClass: synthetic`).
+- NDW traffic not implemented.
+- Correlation handling is a simple fixed damping factor, not a Bayesian model.
+- `k = 5` is an engineering placeholder, not a compliance claim.
+- The visual product is a static simulator page, not yet wired to the upstream
+  Cesium globe.
+
+## Unresolved blockers
+
+- A zero-dependency DATEX II reader (for NDW) is required before adding road
+  traffic as a first-class source.
+- Real calibration requires lawful field observation collection.
+
+## Next highest-ROI experiments
+
+1. Implement NDW DATEX II with a bounded streaming parser and fixtures.
+2. Run the calibration pilot on 10–20 Arnhem sites; publish N, confusion matrix,
+   Brier and ECE — or keep reporting NOT YET CALIBRATED.
+3. Wire the core into the upstream Cesium globe as a separate presentation layer.
+4. Add a persisted offline workspace (saved places/areas) reusing the cache.

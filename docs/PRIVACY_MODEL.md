@@ -30,8 +30,13 @@ If opt-in telemetry is ever enabled, only aggregates leave a device:
 
 ## Tradeoffs (documented, not hidden)
 
-- Larger `k` → stronger privacy, coarser maps. `k = 5` is the default starting
-  point and should be raised for sensitive venues.
+- **`k = 5` is an engineering placeholder, not a compliance claim.** It is a
+  reasonable default for a prototype and nothing more; it does not make the
+  system compliant with any privacy standard (GDPR/AVG, k-anonymity proofs,
+  differential privacy). A real regional/product privacy policy must set k per
+  product and jurisdiction, and be reviewed. `CONFIG.privacy.defaultK` is the
+  single place to change it.
+- Larger `k` → stronger privacy, coarser maps.
 - k-anonymity is necessary but not sufficient; differential privacy and local
   aggregation are candidate future upgrades, and privacy budgets must be
   re-evaluated before any public telemetry release.

@@ -11,8 +11,9 @@ dependency-free HUD that renders the real core's output for Arnhem (per-metric
 views, forecast, evidence drill-down, licence engine, privacy suppression, and
 an investor XYZ view).
 
-> Eye of Argus is an original derivative of the MIT-licensed
-> [`bilawalsidhu/gods-eye-view`](https://github.com/bilawalsidhu/gods-eye-view).
+> Eye of Argus is an **original derivative integrating concepts from** the
+> MIT-licensed [`bilawalsidhu/gods-eye-view`](https://github.com/bilawalsidhu/gods-eye-view).
+> It is **not technically a GitHub fork**, and we do not claim fork status.
 > Upstream is credited and pinned by commit SHA in
 > [`docs/UPSTREAM_PROVENANCE.md`](docs/UPSTREAM_PROVENANCE.md). The intelligence
 > core in this repository is original work; upstream's visual globe is not
@@ -43,13 +44,31 @@ person counts are fabricated. Every estimate is also classed as
 `live | synthetic | mixed | unknown`; the Arnhem demo is **SYNTHETIC DEMO** and
 says so in the CLI, the brief and the simulator.
 
+## Live sources (opt-in)
+
+Two real, keyless sources are implemented behind an adapter contract:
+
+- **OVapi GTFS-RT vehicle positions** (mobility, CC-BY-4.0) — parsed with a
+  dependency-free protobuf reader.
+- **Open-Meteo current weather** (contextual calm, CC-BY-4.0).
+
+Deterministic CI runs **only** on recorded, sanitized fixtures and never touches
+the network. Live fetching runs separately in `.github/workflows/live-smoke.yml`.
+When a live fetch fails, the adapter falls back to the last cached observation,
+which keeps its original timestamp and is therefore shown as `CACHED`/`STALE`,
+never `LIVE`. See [`docs/SOURCE_CANDIDATES.md`](docs/SOURCE_CANDIDATES.md).
+
+**Calibration status: NOT YET CALIBRATED.** No accuracy claim is made; the
+protocol is in [`docs/REAL_WORLD_CALIBRATION_PROTOCOL.md`](docs/REAL_WORLD_CALIBRATION_PROTOCOL.md).
+
 ## Run it (offline)
 
 ```bash
 node bin/arnhem-demo.mjs      # first vertical slice: Arnhem, synthetic
-node --test test/*.test.mjs   # 65 deterministic tests, no network
+node --test test/*.test.mjs   # 85 deterministic tests, no network
 node bin/build-site.mjs       # generate the Pages simulator data from the core
 node bin/verify-site.mjs      # gate the simulator artifact
+node bin/live-smoke.mjs       # opt-in live check (network; never gates CI)
 ```
 
 The demo prints Crowd/Calm/Social for two nearby destinations, forecasts

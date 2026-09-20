@@ -43,7 +43,15 @@
     { "id": "S29", "title": "README/case study", "status": "done", "artifact": "docs/CASE_STUDY.md" },
     { "id": "S30", "title": "Adversarial product/engineering review", "status": "done", "artifact": ".autonomy/ERRORS.md", "note": "13 findings; critical/high fixed; residual items listed" },
     { "id": "S31", "title": "Publish to GitHub with verified CI", "status": "done", "artifact": ".github/workflows/ci.yml", "evidence": "public repo; Node 20.x + 22.x; runs 35535133849 and 35535169906 success" },
-    { "id": "S32", "title": "GitHub Pages next-gen simulator + investor XYZ", "status": "done", "artifact": "site/ + bin/build-site.mjs + bin/verify-site.mjs", "evidence": "Pages run 35535759256 success; live at https://abrahamhl.github.io/eye-of-argus/" }
+    { "id": "S32", "title": "GitHub Pages next-gen simulator + investor XYZ", "status": "done", "artifact": "site/ + bin/build-site.mjs + bin/verify-site.mjs", "evidence": "Pages run 35535759256 success; live at https://abrahamhl.github.io/eye-of-argus/" },
+    { "id": "S33", "title": "Normalized-space confidence + Evidence Quality semantics", "status": "done", "artifact": "src/argus/confidence/confidence.js", "commit": "7cafb90" },
+    { "id": "S34", "title": "Synthetic honesty (dataClass + SYNTHETIC DEMO markers)", "status": "done", "artifact": "src/argus/sources/manifest.js + reports", "commit": "7cafb90" },
+    { "id": "S35", "title": "Live adapters: OVapi GTFS-RT + Open-Meteo (fixture-first)", "status": "done", "artifact": "src/argus/sources/adapters/", "commit": "eb8770c" },
+    { "id": "S36", "title": "Offline cache + correlation damping + versioned config", "status": "done", "artifact": "src/argus/config/methodology.js", "commit": "eb8770c" },
+    { "id": "S37", "title": "Evidence Inspector (why this number)", "status": "done", "artifact": "src/argus/evidence/explain.js" },
+    { "id": "S38", "title": "NDW DATEX II adapter", "status": "blocked", "note": "needs a bounded streaming DATEX II parser" },
+    { "id": "S39", "title": "Real-world calibration pilot", "status": "blocked", "note": "requires lawful field ground truth" },
+    { "id": "S40", "title": "Cesium globe integration (separate presentation layer)", "status": "todo" }
   ],
   "nextStories": ["S03", "S27", "S28", "S30", "S29", "S19"]
 }

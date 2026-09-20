@@ -1,5 +1,35 @@
 # Source candidates (Arnhem / Gelderland first)
 
+## Implemented adapters (verified endpoints)
+
+These were probed live on 2026-09-20 and recorded as sanitized fixtures.
+
+| Source | Endpoint | Operator | Licence | Auth | Format | Signal | Status |
+|---|---|---|---|---|---|---|---|
+| OVapi GTFS-RT vehicle positions | `https://gtfs.ovapi.nl/nl/vehiclePositions.pb` | OVapi / Stichting OpenGeo | CC-BY-4.0 | none | protobuf (GTFS-RT) | mobility pressure | **implemented** (`ovapi-transit-live`), fixture-backed CI |
+| Open-Meteo current weather | `https://api.open-meteo.com/v1/forecast?current=...` | Open-Meteo | CC-BY-4.0 | none | JSON | outdoor calm context | **implemented** (`open-meteo-live`), fixture-backed CI |
+
+Both are keyless and permit commercial use with attribution. Fixtures are
+recorded snapshots; CI runs only in fixture mode and never touches the network
+(the live path is exercised by `.github/workflows/live-smoke.yml`).
+
+### Documented blocker — NDW DATEX II
+
+NDW (`https://opendata.ndw.nu/`, CC0-1.0) is the ideal Dutch road-traffic
+source, but its DATEX II payloads are large streaming XML. Parsing them
+robustly inside a zero-runtime-dependency core is a dedicated task; it is
+deferred rather than faked. OVapi GTFS-RT already provides an independent
+mobility signal in the meantime.
+
+### Rejected / unsuitable
+
+- `https://v0.ovapi.nl/` — connection failed (000) on probe; not used.
+- Social platforms (Instagram/Snapchat-like) — no compliant aggregate/public
+  interface; `UNAVAILABLE / UNSUITABLE`.
+- Wi-Fi/BLE/MAC scanning, through-wall monitoring — rejected outright.
+
+## Candidate backlog
+
 Source count is **not** a KPI. Each candidate must state the independent
 information it adds, its legality, reliability, cost, coverage, and what
 happens when it disappears. A candidate with low novelty relative to an

@@ -19,10 +19,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Setup Node ${{ matrix.node }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: ${{ matrix.node }}
 
@@ -34,7 +34,7 @@ jobs:
         run: |
           find src bin test -name '*.js' -o -name '*.mjs' | while read -r f; do node --check "$f"; done
 
-      - name: Deterministic test suite
+      - name: Deterministic test suite (fixtures only, no network)
         run: node --test test/*.test.mjs
 
       - name: Vertical slice (Arnhem, synthetic, offline)
@@ -53,8 +53,10 @@ jobs:
     name: Simulator artifact
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: '22.x'
       - name: Build simulator data from the core
@@ -66,7 +68,8 @@ jobs:
     name: Upstream attribution present
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - name: Assert provenance and licence files exist and mention upstream
         run: |
           test -f LICENSE

@@ -4,7 +4,7 @@
 - Symptom: `Cannot find module '...\\test'`, 1 failing pseudo-test.
 - Cause: Node 22 `--test` does not accept a bare directory here.
 - Fix: `node --test test/*.test.mjs` (D008).
-- Status: fixed; 65/65 pass after S30 review fixes.
+- Status: fixed; 85/85 pass after S30 review fixes.
 
 ## E002 — Floating-point normalization (FAILED, FIXED)
 - Symptom: `normalizeValue(80, {min:0,max:100}, true)` returned `19.999999999999996`.
@@ -25,6 +25,22 @@
 - Fix: CLI strips a leading BOM before `JSON.parse` (and `[IO.File]::WriteAllText` for fixtures).
 - Status: fixed.
 
+## E006 — Confidence used raw values across incompatible units (FAILED, FIXED)
+- Symptom: `computeConfidence` measured dispersion over `observation.value`
+  while fusion normalized heterogeneous sources to a common 0..100 domain, so
+  agreement was meaningless across units (vehicles/hour vs % vs arrivals vs dB).
+- Fix: `computeEvidenceConfidence` consumes the normalized contributions the
+  fusion engine used (`normalizedValue`, `weight`, `provider`, `freshness`,
+  `kind`). Regression tests cover cross-unit agreement and contradiction.
+- Commit: `7cafb90`. Status: fixed; 85/85 pass.
+
+## E007 — Confidence wording implied probability (FIXED)
+- Symptom: `0.839` could be read as "83.9% likely correct".
+- Fix: renamed to Evidence Confidence (`confidenceSemantics: 'evidence-quality'`)
+  across core, brief, CLI and simulator; documented as not a probability until
+  calibration exists.
+- Status: fixed.
+
 ## E004 — Governance docs pending
 - Placeholder governance docs from donor/argus were **not** copied here. This
   project's autonomy files are the source of truth until S03/S29/S30 land.
@@ -32,7 +48,7 @@
 
 ## S30 — Adversarial review (independent) — findings and fixes
 An independent reviewer falsified several claims. All critical/high findings
-were fixed in the same session; 65/65 tests pass.
+were fixed in the same session; 85/85 tests pass.
 
 | # | Severity | Defect | Fix | Regression test |
 |---|---|---|---|---|

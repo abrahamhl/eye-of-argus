@@ -39,3 +39,33 @@ published as a **public** GitHub repository at `abrahamhl/eye-of-argus`
 (default branch `main`). Content is synthetic, carries no secrets, and is MIT
 licensed with upstream attribution in `NOTICE.md`. Visibility can be changed by
 the owner at any time.
+
+## D010 — Confidence is measured in normalized space
+`computeEvidenceConfidence` receives the normalized contributions produced by
+fusion, never raw values. Raw units (vehicles/hour, %, arrivals, dB) are not
+comparable; dispersion over raw values is meaningless. Regression tests cover
+cross-unit agreement and contradiction.
+
+## D011 — The number is Evidence Quality, not a probability
+User-facing confidence is renamed **Evidence Confidence / Evidence Quality** and
+carries `confidenceSemantics: 'evidence-quality'`. It must not be read as
+P(correct) until real calibration exists.
+
+## D012 — dataClass guards against masquerade
+Every estimate carries `dataClass` (`live | synthetic | mixed | unknown`),
+aggregated from source manifests. Synthetic and unknown output is visibly
+marked; unknown is never presented as live.
+
+## D013 — Live adapters are fixture-first
+Adapters implement fetch/parse/normalize, but CI runs only on recorded,
+sanitized fixtures. Live fetching is isolated in `live-smoke.yml`. A failed
+fetch falls back to the cache, which keeps the original timestamp and is
+therefore never classified LIVE.
+
+## D014 — Accurate upstream relationship
+This repository is an **original derivative integrating concepts**, not a
+GitHub fork. We do not claim fork status or rewrite history to fake ancestry.
+
+## D015 — Scoring coefficients live in versioned config
+`src/argus/config/methodology.js` holds every scoring coefficient. Changing one
+bumps `METHODOLOGY_VERSION` (currently `m0.2`, explicitly heuristic).

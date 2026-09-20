@@ -28,7 +28,7 @@ explicit estimates:
 
 ## Result (measured, reproducible)
 
-- Headless core with **65/65 deterministic tests** (`node --test test/*.test.mjs`),
+- Headless core with **85/85 deterministic tests** (`node --test test/*.test.mjs`),
   no network required.
 - Arnhem slice: Burger King Centrum → Crowd **HIGH 73.0** (range 63–83),
   Calm **LOW 22.0**; Park Sonsbeek → Crowd **MODERATE 38.1**,
