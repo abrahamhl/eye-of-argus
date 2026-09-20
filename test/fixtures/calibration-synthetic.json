@@ -1,0 +1,9 @@
+{
+  "synthetic": true,
+  "methodologyVersion": "m0.1",
+  "observations": [
+    { "predictedBand": "HIGH", "truthBand": "HIGH", "predictedScore": 80, "truthValue": 78, "probability": 0.8, "confidence": 0.8, "outcome": 1 },
+    { "predictedBand": "LOW", "truthBand": "MODERATE", "predictedScore": 20, "truthValue": 35, "probability": 0.2, "confidence": 0.2, "outcome": 0 },
+    { "predictedBand": "HIGH", "truthBand": "VERY HIGH", "predictedScore": 70, "truthValue": 72, "probability": 0.7, "confidence": 0.7, "outcome": 1 }
+  ]
+}

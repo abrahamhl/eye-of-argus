@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Offline core (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20.x', '22.x']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Assert zero runtime dependencies (offline-first guarantee)
+        run: |
+          node -e "const p=require('./package.json'); const n=Object.keys(p.dependencies||{}).length; if(n!==0){console.error('runtime dependencies found: '+n); process.exit(1);} console.log('zero runtime dependencies: OK');"
+
+      - name: Lint JavaScript syntax
+        run: |
+          find src bin test -name '*.js' -o -name '*.mjs' | while read -r f; do node --check "$f"; done
+
+      - name: Deterministic test suite
+        run: node --test test/*.test.mjs
+
+      - name: Vertical slice (Arnhem, synthetic, offline)
+        run: node bin/arnhem-demo.mjs
+
+      - name: Calibration CLI refuses a synthetic fixture without --allow-synthetic
+        run: |
+          node bin/calibrate.mjs --fixture test/fixtures/calibration-synthetic.json && exit 1 || echo "correctly refused"
+
+      - name: Calibration CLI runs with an explicit synthetic opt-in
+        run: |
+          node bin/calibrate.mjs --fixture test/fixtures/calibration-synthetic.json --allow-synthetic >/dev/null
+          echo "calibration CLI OK"
+
+  provenance:
+    name: Upstream attribution present
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert provenance and licence files exist and mention upstream
+        run: |
+          test -f LICENSE
+          test -f NOTICE.md
+          test -f docs/UPSTREAM_PROVENANCE.md
+          grep -q "0d41b6be5490db1f10a171f238be75db4d4ec3b4" docs/UPSTREAM_PROVENANCE.md
+          grep -qi "gods-eye-view" NOTICE.md
+          echo "provenance OK"
