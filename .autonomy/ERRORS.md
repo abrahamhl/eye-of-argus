@@ -4,7 +4,7 @@
 - Symptom: `Cannot find module '...\\test'`, 1 failing pseudo-test.
 - Cause: Node 22 `--test` does not accept a bare directory here.
 - Fix: `node --test test/*.test.mjs` (D008).
-- Status: fixed; 85/85 pass after S30 review fixes.
+- Status: fixed; 94/94 pass after S30 review fixes.
 
 ## E002 — Floating-point normalization (FAILED, FIXED)
 - Symptom: `normalizeValue(80, {min:0,max:100}, true)` returned `19.999999999999996`.
@@ -32,7 +32,7 @@
 - Fix: `computeEvidenceConfidence` consumes the normalized contributions the
   fusion engine used (`normalizedValue`, `weight`, `provider`, `freshness`,
   `kind`). Regression tests cover cross-unit agreement and contradiction.
-- Commit: `7cafb90`. Status: fixed; 85/85 pass.
+- Commit: `7cafb90`. Status: fixed; 94/94 pass.
 
 ## E007 — Confidence wording implied probability (FIXED)
 - Symptom: `0.839` could be read as "83.9% likely correct".
@@ -48,7 +48,7 @@
 
 ## S30 — Adversarial review (independent) — findings and fixes
 An independent reviewer falsified several claims. All critical/high findings
-were fixed in the same session; 85/85 tests pass.
+were fixed in the same session; 94/94 tests pass.
 
 | # | Severity | Defect | Fix | Regression test |
 |---|---|---|---|---|

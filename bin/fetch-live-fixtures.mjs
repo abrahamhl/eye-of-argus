@@ -9,11 +9,14 @@
  *   node bin/fetch-live-fixtures.mjs
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { Readable } from 'node:stream';
+import { createGunzip } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { httpFetch, parseJson } from '../src/argus/sources/adapters/httpFetch.js';
 import { parseVehiclePositions, encodeVehiclePositions } from '../src/argus/sources/adapters/gtfsRealtime.js';
+import { createDatexSpeedIntensityParser, joinBbox, trafficPressure, buildDatexFixture } from '../src/argus/sources/adapters/datex.js';
 import { ARNHEM_BBOX } from '../src/argus/sources/adapters/index.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -56,3 +59,24 @@ const wrapped = {
 };
 writeFileSync(join(FIXTURES, 'open-meteo-arnhem.json'), JSON.stringify(wrapped, null, 2));
 process.stdout.write(`open-meteo: current=${JSON.stringify(response.current)}\n`);
+
+// --- NDW speed & intensity (DATEX II v3, ~217 MB uncompressed) ---
+const ndwUrl = 'https://opendata.ndw.nu/snelheden_en_intensiteiten_meetgegevens_en_configuratie_meetlocaties.xml.gz';
+const ndw = await httpFetch(ndwUrl, { timeoutMs: 120000 });
+if (!ndw.ok) {
+  process.stderr.write(`ndw fetch failed: ${ndw.error}\n`);
+} else {
+  const parser = createDatexSpeedIntensityParser();
+  const stream = Readable.from(ndw.body).pipe(createGunzip());
+  await new Promise((resolve, reject) => {
+    stream.on('data', (chunk) => parser.push(chunk.toString('utf8')));
+    stream.on('end', resolve);
+    stream.on('error', reject);
+  });
+  const parsed = parser.end();
+  const rows = joinBbox(parsed, ARNHEM_BBOX).filter((r) => r.flow !== null || r.speed !== null).slice(0, 25);
+  const fixtureXml = buildDatexFixture({ publicationTime: parsed.publicationTime ?? new Date().toISOString(), rows });
+  writeFileSync(join(FIXTURES, 'ndw-speed-intensity.arnhem.xml'), fixtureXml);
+  const pressure = trafficPressure(rows);
+  process.stdout.write(`ndw: sitesTotal=${parsed.sites.size} valuesTotal=${parsed.values.size} arnhemRows=${rows.length} pressure=${JSON.stringify(pressure)} bytes=${fixtureXml.length}\n`);
+}

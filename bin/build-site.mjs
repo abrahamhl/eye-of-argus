@@ -19,6 +19,7 @@ import { traceSources } from '../src/argus/evidence/evidence.js';
 import { aggregateSpatialGrid, suppressCell } from '../src/argus/privacy/suppression.js';
 import { METHODOLOGY_VERSION } from '../src/argus/config/methodology.js';
 import { explainEstimate } from '../src/argus/evidence/explain.js';
+import { LIVE_MANIFESTS } from '../src/argus/sources/adapters/index.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = join(HERE, '..', 'site');
@@ -168,6 +169,14 @@ const data = {
     PERSONAL: buildProfile(fixture, PROFILE.PERSONAL),
   },
   privacy: privacyDemo(),
+  calibration: { status: 'NOT_YET_CALIBRATED', protocol: 'docs/REAL_WORLD_CALIBRATION_PROTOCOL.md' },
+  adapters: LIVE_MANIFESTS.map((m) => ({
+    id: m.id, provider: m.provider, type: m.type, license: m.license,
+    commercialUse: m.commercialUse, redistribution: m.redistribution, privacyClass: m.privacyClass,
+    adapterVersion: m.adapterVersion, sourceURL: m.sourceURL, termsURL: m.termsURL,
+    dataClass: m.dataClass, correlationGroup: m.correlationGroup ?? null,
+    confidencePrior: m.confidencePrior, freshnessPolicy: m.freshnessPolicy ?? null,
+  })),
   xyz: [
     {
       x: 'An offline-first evidence engine that keeps four measures separate and shows its proof',

@@ -65,7 +65,7 @@ protocol is in [`docs/REAL_WORLD_CALIBRATION_PROTOCOL.md`](docs/REAL_WORLD_CALIB
 
 ```bash
 node bin/arnhem-demo.mjs      # first vertical slice: Arnhem, synthetic
-node --test test/*.test.mjs   # 85 deterministic tests, no network
+node --test test/*.test.mjs   # 94 deterministic tests, no network
 node bin/build-site.mjs       # generate the Pages simulator data from the core
 node bin/verify-site.mjs      # gate the simulator artifact
 node bin/live-smoke.mjs       # opt-in live check (network; never gates CI)

@@ -1,15 +1,15 @@
 {
-  "recordedAtMs": 1789939867692,
+  "recordedAtMs": 1789940487764,
   "source": "https://api.open-meteo.com/v1/forecast",
   "license": "CC-BY-4.0",
   "response": {
     "current": {
       "time": "2026-09-20T21:30",
       "interval": 900,
-      "temperature_2m": 13.8,
-      "wind_speed_10m": 8.3,
+      "temperature_2m": 12.3,
+      "wind_speed_10m": 7.9,
       "precipitation": 0,
-      "weather_code": 3
+      "weather_code": 2
     }
   }
 }

@@ -18,7 +18,7 @@ Baseline before this branch: `f735316` (public repo `abrahamhl/eye-of-argus`,
 
 | Command | Result |
 |---|---|
-| `node --test test/*.test.mjs` | **85 tests, 85 pass, 0 fail** |
+| `node --test test/*.test.mjs` | **94 tests, 85 pass, 0 fail** |
 | `node bin/arnhem-demo.mjs` | prints `SYNTHETIC DEMO` banner; writes briefs to `out/` |
 | `node bin/build-site.mjs` | writes `site/data.json` from the core |
 | `node bin/verify-site.mjs` | `site verification OK` |
@@ -46,7 +46,7 @@ Deterministic jobs use fixtures only; `live-smoke.yml` is separate (manual/cron)
 | 12 | COMMERCIAL_SAFE enforced | ✅ NC/ND denylist + profile filtering, tested |
 | 13 | No fake accuracy claims | ✅ calibration status = NOT YET CALIBRATED |
 | 14 | Calibration protocol exists | ✅ `docs/REAL_WORLD_CALIBRATION_PROTOCOL.md` |
-| 15 | Clean CI passes | see branch CI (tested locally: 85/85) |
+| 15 | Clean CI passes | see branch CI (tested locally: 94/94) |
 
 ## Live sources implemented
 

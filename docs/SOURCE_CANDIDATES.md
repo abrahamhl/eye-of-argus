@@ -7,19 +7,22 @@ These were probed live on 2026-09-20 and recorded as sanitized fixtures.
 | Source | Endpoint | Operator | Licence | Auth | Format | Signal | Status |
 |---|---|---|---|---|---|---|---|
 | OVapi GTFS-RT vehicle positions | `https://gtfs.ovapi.nl/nl/vehiclePositions.pb` | OVapi / Stichting OpenGeo | CC-BY-4.0 | none | protobuf (GTFS-RT) | mobility pressure | **implemented** (`ovapi-transit-live`), fixture-backed CI |
+| NDW speed & intensity (DATEX II v3) | `https://opendata.ndw.nu/snelheden_en_intensiteiten_meetgegevens_en_configuratie_meetlocaties.xml.gz` | NDW | CC0-1.0 | none | XML.gz (~217 MB) | road traffic pressure | **implemented** (`ndw-traffic-live`), streaming parser + fixture |
 | Open-Meteo current weather | `https://api.open-meteo.com/v1/forecast?current=...` | Open-Meteo | CC-BY-4.0 | none | JSON | outdoor calm context | **implemented** (`open-meteo-live`), fixture-backed CI |
 
-Both are keyless and permit commercial use with attribution. Fixtures are
-recorded snapshots; CI runs only in fixture mode and never touches the network
-(the live path is exercised by `.github/workflows/live-smoke.yml`).
+All three are keyless and permit commercial use. Fixtures are recorded
+snapshots; CI runs only in fixture mode and never touches the network (the live
+path is exercised by `.github/workflows/live-smoke.yml`).
 
-### Documented blocker — NDW DATEX II
+### NDW DATEX II — implemented
 
-NDW (`https://opendata.ndw.nu/`, CC0-1.0) is the ideal Dutch road-traffic
-source, but its DATEX II payloads are large streaming XML. Parsing them
-robustly inside a zero-runtime-dependency core is a dedicated task; it is
-deferred rather than faked. OVapi GTFS-RT already provides an independent
-mobility signal in the meantime.
+NDW is the primary Dutch road-traffic source. Its combined publication is a
+~217 MB namespaced DATEX II v3 XML file containing both the measurement-site
+table (coordinates) and the measured values. `src/argus/sources/adapters/datex.js`
+is a bounded, forward-only streaming parser that keeps only site coordinates and
+the first valid `TrafficFlow.vehicleFlowRate` / `TrafficSpeed.averageVehicleSpeed`
+per site, discarding the rest as it streams. The recorder runs it over the live
+file and writes a small Arnhem-only DATEX fixture used by deterministic CI.
 
 ### Rejected / unsuitable
 

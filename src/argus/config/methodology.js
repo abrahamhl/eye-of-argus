@@ -21,7 +21,7 @@ export const CONFIG = Object.freeze({
     // member of a group have their weight multiplied by correlationDamping.
     // This is a simple, honest first implementation — not a Bayesian model.
     correlationGroups: {
-      'mobility-pressure': ['ndw-traffic', 'parking-arnhem', 'ovapi-transit', 'ovapi-transit-live'],
+      'mobility-pressure': ['ndw-traffic', 'ndw-traffic-live', 'parking-arnhem', 'ovapi-transit', 'ovapi-transit-live'],
     },
     correlationDamping: 0.5,
   },

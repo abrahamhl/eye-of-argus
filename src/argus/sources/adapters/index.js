@@ -1,4 +1,6 @@
 import { readFileSync } from 'node:fs';
+import { Readable } from 'node:stream';
+import { createGunzip } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -7,6 +9,7 @@ import { createObservation } from '../observation.js';
 import { httpFetch, parseJson } from './httpFetch.js';
 import { parseVehiclePositions } from './gtfsRealtime.js';
 import { parseOpenMeteoCurrent, weatherCalmContext } from './openMeteo.js';
+import { createDatexSpeedIntensityParser, joinBbox, trafficPressure } from './datex.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const FIXTURE_DIR = join(HERE, '..', '..', '..', '..', 'test', 'fixtures');
@@ -17,6 +20,25 @@ export const ARNHEM_BBOX = { minLat: 51.93, maxLat: 52.05, minLon: 5.80, maxLon:
 export const TRANSIT_REFERENCE_COUNT = 40;
 
 export const LIVE_MANIFESTS = [
+  createManifest({
+    id: 'ndw-traffic-live',
+    provider: 'NDW (Nationale Databank Wegverkeersgegevens)',
+    type: 'road-traffic-speed-flow',
+    geographicCoverage: 'NL',
+    spatialResolution: 'measurement site / lane',
+    temporalResolution: '1 min',
+    license: 'CC0-1.0',
+    commercialUse: true,
+    redistribution: 'allowed',
+    privacyClass: PRIVACY_CLASS.PUBLIC_AGGREGATE,
+    sourceURL: 'https://opendata.ndw.nu/snelheden_en_intensiteiten_meetgegevens_en_configuratie_meetlocaties.xml.gz',
+    termsURL: 'https://opendata.ndw.nu/',
+    adapterVersion: '0.1.0',
+    confidencePrior: 0.75,
+    dataClass: 'live',
+    correlationGroup: 'mobility-pressure',
+    freshnessPolicy: { liveWithinSeconds: 300, cachedWithinSeconds: 1800 },
+  }),
   createManifest({
     id: 'ovapi-transit-live',
     provider: 'OVapi / Stichting OpenGeo',
@@ -151,6 +173,61 @@ export async function collectLive({
       }));
       if (cache) cache.set(manifest.id, { sourceId: manifest.id, observedAtMs, receivedAtMs: nowMs, adapterVersion: manifest.adapterVersion, dataClass: 'live', value });
       results.push({ sourceId: manifest.id, ok: true, value, current });
+    } else {
+      const entry = cache ? cache.get(manifest.id) : null;
+      if (entry) {
+        observations.push(createObservation({ sourceId: manifest.id, value: entry.value, observedAtMs: entry.observedAtMs, meta: { cached: true } }));
+        results.push({ sourceId: manifest.id, ok: false, error: error ?? 'unavailable', cached: true });
+      } else {
+        results.push({ sourceId: manifest.id, ok: false, error: error ?? 'unavailable', cached: false });
+      }
+    }
+  }
+
+  // --- NDW speed & intensity (DATEX II v3) ---
+  {
+    const manifest = LIVE_MANIFESTS.find((m) => m.id === 'ndw-traffic-live');
+    let xml = null;
+    let error = null;
+
+    if (mode === 'fixture') {
+      try { xml = readFileSync(join(fixtureDir, 'ndw-speed-intensity.arnhem.xml'), 'utf8'); }
+      catch (e) { error = `fixture-missing:${e.message}`; }
+    }
+
+    let parsed = null;
+    if (xml) {
+      const parser = createDatexSpeedIntensityParser();
+      parser.push(xml);
+      parsed = parser.end();
+    } else if (mode === 'live') {
+      const res = await httpFetch(manifest.sourceURL, { timeoutMs: Math.max(timeoutMs, 60000) });
+      if (res.ok) {
+        const parser = createDatexSpeedIntensityParser();
+        const stream = Readable.from(res.body).pipe(createGunzip());
+        await new Promise((resolve, reject) => {
+          stream.on('data', (chunk) => parser.push(chunk.toString('utf8')));
+          stream.on('end', resolve);
+          stream.on('error', reject);
+        });
+        parsed = parser.end();
+      } else {
+        error = res.error;
+      }
+    }
+
+    if (parsed) {
+      const rows = joinBbox(parsed, bbox);
+      const pressure = trafficPressure(rows);
+      const observedAtMs = parsed.publicationTime ? Date.parse(parsed.publicationTime) : nowMs;
+      observations.push(createObservation({
+        sourceId: manifest.id,
+        value: pressure.value,
+        observedAtMs,
+        meta: { sites: pressure.sites, avgFlow: pressure.avgFlow, avgSpeed: pressure.avgSpeed, mode, recorded: mode === 'fixture' },
+      }));
+      if (cache) cache.set(manifest.id, { sourceId: manifest.id, observedAtMs, receivedAtMs: nowMs, adapterVersion: manifest.adapterVersion, dataClass: 'live', value: pressure.value });
+      results.push({ sourceId: manifest.id, ok: true, ...pressure });
     } else {
       const entry = cache ? cache.get(manifest.id) : null;
       if (entry) {

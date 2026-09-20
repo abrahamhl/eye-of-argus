@@ -13,6 +13,7 @@ const TABS = [
   { id: 'evidence', label: 'EVIDENCE' },
   { id: 'licence', label: 'LICENCE' },
   { id: 'privacy', label: 'PRIVACY' },
+  { id: 'analyst', label: 'ANALYST' },
   { id: 'brief', label: 'INVESTORS · XYZ' },
 ];
 
@@ -304,6 +305,7 @@ function renderLower() {
     case 'evidence': return renderEvidence(lower, p);
     case 'licence': return renderLicence(lower);
     case 'privacy': return renderPrivacy(lower);
+    case 'analyst': return renderAnalyst(lower);
     case 'brief': return renderBrief(lower);
     case 'crowd': case 'calm': case 'social':
       return renderMetricDetail(lower, p, state.tab);
@@ -433,6 +435,33 @@ function renderPrivacy(lower) {
       <div class="note">
         Released cells expose a coarse band, never an exact count. Cells below k contributors are withheld.
         No device identifiers are processed. The canvas shows raw demo cells: solid = released band, hatched = suppressed.
+      </div>
+    </div>`;
+}
+
+function renderAnalyst(lower) {
+  const d = state.data;
+  const p = place();
+  const rows = ['crowd', 'calm', 'social'].map((k) => {
+    const s = p.signals[k];
+    return `<tr><td>${k}</td><td>${fmt(s.score)} ${s.band}</td><td>${s.confidence}</td><td>${escapeHtml(s.confidenceState ?? '')}</td><td>${escapeHtml(String(s.dataClass).toUpperCase())}</td><td>${(s.tracedSources ?? []).map((t) => escapeHtml(t)).join(', ')}</td></tr>`;
+  }).join('');
+  lower.innerHTML = `
+    <h2>ANALYST MODE · PROVENANCE &amp; CORROBORATION</h2>
+    <div class="two">
+      <div>
+        <h2 class="muted">SIGNAL CORROBORATION (${escapeHtml(p.name)})</h2>
+        <table><thead><tr><th>Signal</th><th>Score</th><th>Evidence conf</th><th>State</th><th>Data class</th><th>Traced sources</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="note">Calibration: <b>${escapeHtml(d.calibration.status)}</b>. Evidence confidence is quality, not probability — see ${escapeHtml(d.calibration.protocol)}.</div>
+        <h2 class="muted">FRESHNESS STATES</h2>
+        <div>${d.freshnessStates.map((s) => `<span class="tag ${s}">${s}</span>`).join(' ')}</div>
+        <p class="muted">Cached or inferred data is never presented as live. This page is ${escapeHtml(String(d.dataClass).toUpperCase())}.</p>
+      </div>
+      <div>
+        <h2 class="muted">ADAPTERS IN THE REGISTRY</h2>
+        <table><thead><tr><th>Adapter</th><th>Type</th><th>Licence</th><th>Comm.</th><th>Ver</th><th>Data class</th><th>Correlation</th></tr></thead>
+        <tbody>${d.adapters.map((a) => `<tr><td>${escapeHtml(a.id)}</td><td>${escapeHtml(a.type)}</td><td>${escapeHtml(a.license)}</td><td>${a.commercialUse}</td><td>${escapeHtml(a.adapterVersion)}</td><td>${escapeHtml(a.dataClass)}</td><td>${escapeHtml(a.correlationGroup ?? '—')}</td></tr>`).join('')}</tbody></table>
+        <p class="muted">Deterministic CI runs on recorded fixtures only; live fetching is a separate smoke workflow.</p>
       </div>
     </div>`;
 }

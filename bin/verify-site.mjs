@@ -50,6 +50,8 @@ if (data) {
   check(data.evidence?.runtimeDependencies === 0, 'runtime dependencies must be zero');
   check(Array.isArray(data.xyz) && data.xyz.length >= 3, 'xyz statements missing');
   check(data.upstream?.sha?.length === 40, 'upstream sha is not a full 40-char commit');
+  check(Array.isArray(data.adapters) && data.adapters.length >= 3, 'adapter registry missing from the site');
+  check(data.calibration?.status === 'NOT_YET_CALIBRATED', 'calibration status must be NOT_YET_CALIBRATED');
 
   for (const profile of ['COMMERCIAL_SAFE', 'PERSONAL']) {
     const p = data.profiles?.[profile];

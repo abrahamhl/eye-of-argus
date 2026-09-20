@@ -44,10 +44,10 @@ test('the recorded weather fixture parses and normalizes to a calm context', () 
   assert.ok(value >= 0 && value <= 100);
 });
 
-test('fixture mode returns both live-capable sources, marked as recorded', async () => {
+test('fixture mode returns all live-capable sources, marked as recorded', async () => {
   const { observations, results } = await collectLive({ mode: 'fixture', nowMs: NOW });
-  assert.equal(observations.length, 2);
-  assert.equal(results.length, 2);
+  assert.equal(observations.length, 3);
+  assert.equal(results.length, 3);
   assert.ok(results.every((r) => r.ok));
   assert.ok(observations.every((o) => o.meta.recorded === true));
 });
