@@ -1,5 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 import { wilsonInterval, midpoint, expectedCalibrationError, mean } from '../src/argus/calibration/stats.js';
 import { fleissKappa, percentAgreement, modalBand, kappaLabel } from '../src/argus/calibration/agreement.js';
@@ -142,4 +149,13 @@ test('mergeRecords deduplicates and sorts by window start', () => {
   assert.equal(duplicates, 1);
   assert.equal(merged.length, 3);
   assert.equal(merged[0].windowStart, '2026-10-05T12:00:00Z');
+});
+
+test('merge CLI treats --out as an output path, not an input file', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'eoa-merge-'));
+  const input = join(dir, 'a.jsonl');
+  const out = join(dir, 'merged.jsonl');
+  writeFileSync(input, JSON.stringify({ placeId: 'p', windowStart: '2026-10-05T12:00:00Z', observer: 'AB', band: 'LOW' }) + '\n');
+  execFileSync(process.execPath, [join(ROOT, 'bin', 'merge-observations.mjs'), input, '--out', out], { encoding: 'utf8' });
+  assert.ok(existsSync(out), 'merged output file was not written');
 });
