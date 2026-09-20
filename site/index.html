@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Eye of Argus — Geospatial Intelligence Simulator</title>
+  <meta name="description" content="Offline-first geospatial evidence engine. Crowd, Calm and Social Opportunity estimates with explicit confidence and traceable evidence.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">◎</span>
+      <div>
+        <h1>EYE OF ARGUS</h1>
+        <p class="motto">OFFLINE FIRST FOR SURE</p>
+      </div>
+    </div>
+    <div class="chips" id="evidence-chips"></div>
+    <div class="controls">
+      <div class="seg" id="profile-seg" role="group" aria-label="Licence profile"></div>
+      <div class="seg" id="mode-seg" role="group" aria-label="Preference mode"></div>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+
+  <div class="layout">
+    <aside class="panel venues" aria-label="Destinations">
+      <h2>ARNHEM / GELDERLAND</h2>
+      <div id="venue-list"></div>
+      <div class="legend" id="legend"></div>
+    </aside>
+
+    <section class="panel stage" aria-label="Tactical view">
+      <canvas id="radar"></canvas>
+      <div class="stage-overlay" id="stage-overlay"></div>
+    </section>
+
+    <aside class="panel metrics" id="metrics" aria-label="Measures"></aside>
+  </div>
+
+  <section class="panel lower" id="lower" aria-live="polite"></section>
+
+  <footer>
+    <span id="footer-meta"></span>
+    <span>Derivative study of <a id="upstream-link" href="#" target="_blank" rel="noopener">gods-eye-view</a> · MIT · original core</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

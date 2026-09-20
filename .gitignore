@@ -6,6 +6,10 @@ node_modules/
 out/
 *.log
 
+# Generated simulator data (rebuilt by bin/build-site.mjs in CI and Pages)
+site/data.json
+site/LICENSE
+
 # Environment
 .env
 .env.*

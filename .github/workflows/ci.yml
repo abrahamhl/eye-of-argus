@@ -49,6 +49,19 @@ jobs:
           node bin/calibrate.mjs --fixture test/fixtures/calibration-synthetic.json --allow-synthetic >/dev/null
           echo "calibration CLI OK"
 
+  site:
+    name: Simulator artifact
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Build simulator data from the core
+        run: node bin/build-site.mjs
+      - name: Verify simulator artifact
+        run: node bin/verify-site.mjs
+
   provenance:
     name: Upstream attribution present
     runs-on: ubuntu-latest
