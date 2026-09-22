@@ -51,8 +51,10 @@ says so in the CLI, the brief and the simulator.
 
 ## Live sources (opt-in)
 
-Two real, keyless sources are implemented behind an adapter contract:
+Three real, keyless sources are implemented behind an adapter contract:
 
+- **NDW DATEX II traffic telemetry** (road speed/intensity, CC0-1.0) — parsed
+  with a bounded forward-only streaming parser.
 - **OVapi GTFS-RT vehicle positions** (mobility, CC-BY-4.0) — parsed with a
   dependency-free protobuf reader.
 - **Open-Meteo current weather** (contextual calm, CC-BY-4.0).
@@ -66,11 +68,22 @@ never `LIVE`. See [`docs/SOURCE_CANDIDATES.md`](docs/SOURCE_CANDIDATES.md).
 **Calibration status: NOT YET CALIBRATED.** No accuracy claim is made; the
 protocol is in [`docs/REAL_WORLD_CALIBRATION_PROTOCOL.md`](docs/REAL_WORLD_CALIBRATION_PROTOCOL.md).
 
+## Investor MVP gate
+
+The current milestone is **evidence, not feature count**. The product is frozen
+around one testable outcome: estimate the crowd band of a public place, explain
+why, then compare the estimate with independent field observations. No investor
+accuracy or business-value claim is valid until the pilot gates in
+[`docs/INVESTOR_MVP_SPEC.md`](docs/INVESTOR_MVP_SPEC.md) are completed.
+
+Cesium, voice, additional tactical layers and other presentation work are
+secondary until the real-world validation and buyer-task experiments are run.
+
 ## Run it (offline)
 
 ```bash
 node bin/arnhem-demo.mjs      # first vertical slice: Arnhem, synthetic
-node --test test/*.test.mjs   # 94 deterministic tests, no network
+node --test test/*.test.mjs   # deterministic suite, no network
 node bin/build-site.mjs       # generate the Pages simulator data from the core
 node bin/verify-site.mjs      # gate the simulator artifact
 node bin/live-smoke.mjs       # opt-in live check (network; never gates CI)
