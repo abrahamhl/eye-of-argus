@@ -1,6 +1,19 @@
 # ROI backlog
 
-Every major feature gets a score. We do **not** implement impressive-but-useless
+## Current stage gate — prove value before adding spectacle
+
+Until the investor MVP is validated, priority is:
+
+1. **Real-world crowd validation** — collect matched predictions + independent field truth.
+2. **Buyer-task validation** — test one real decision workflow against its current baseline.
+3. **Live-source reliability history** — measure availability over time, not one successful run.
+4. **Only then** expand visualisation (including Cesium) or add new feature families.
+
+The current buyer hypothesis and measurable gates live in
+[`PRODUCT_VALIDATION_SPEC.md`](PRODUCT_VALIDATION_SPEC.md). A feature that cannot improve a
+measured user outcome, validation quality or reliability is deferred.
+
+Every major engineering feature gets a heuristic score. We do **not** implement impressive-but-useless
 features. Values are 1–5. Priority = VALUE×2 + PORTFOLIO + DIFFERENTIATION − COST.
 
 | # | Feature | USER | PROBLEM | VALUE | ENG COST | DATA COST | LEGAL | PORTFOLIO | BUSINESS | DIFFERENTIATION | PRIORITY |
