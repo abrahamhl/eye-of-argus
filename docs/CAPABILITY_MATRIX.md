@@ -7,9 +7,9 @@ Legend: **Reuse** (take as-is), **Adapt** (derive with changes), **Original**
 |---|---|---|---|
 | Cesium photoreal globe / camera / scenes | Yes | Not yet | **Reuse** later, credited |
 | Layer framework + source factories | Yes (`src/layers`, `src/sources`) | Adapter core in `src/argus/sources` | **Adapt** conventions; **Original** contracts |
-| Server key-broker proxies | Yes (`server/providers`) | Not yet | **Reuse** when live adapters land |
-| Import-direction / package-boundary gates | Yes | Not yet | **Reuse** pattern; add our own gate later |
-| Unit-test harness | Yes (`scripts/run-unit-tests.mjs`, 4135 pass) | `node --test` (43 pass) | **Original** suite; do not fork upstream tests |
+| Server key-broker proxies | Yes (`server/providers`) | Not required by current keyless adapters | **Defer** until a licensed keyed source justifies the boundary |
+| Import-direction / package-boundary gates | Yes | Truth-drift + public/private boundary gates | **Adapt** pattern; **Original** project-specific guards |
+| Unit-test harness | Yes (`scripts/run-unit-tests.mjs`) | Deterministic `node --test` suite + CI | **Original** suite; measured count comes from the Truth Snapshot |
 | Crowd Index | No | **Yes** (`src/argus/crowd`) | **Original** |
 | Calm Index (not inverse of crowd) | No | **Yes** (`src/argus/calm`) | **Original** |
 | Social Opportunity Index | No | **Yes** (`src/argus/social`) | **Original** |
@@ -22,7 +22,7 @@ Legend: **Reuse** (take as-is), **Adapt** (derive with changes), **Original**
 | Temporal forecast NOW/+15/+30/+60 | No | **Yes** (`src/argus/forecast`) | **Original** |
 | Place brief (JSON + HTML) | No | **Yes** (`src/argus/reports`) | **Original** |
 | Arnhem / Netherlands first region | No (US/Estonia/etc. focus) | **Yes** (`src/argus/regional/arnhem`) | **Original** |
-| Alignment/calibration harness | No | Schema only (`docs/CALIBRATION.md`) | **Original**, next |
+| Alignment/calibration harness | No | Field PWA + merge/validate CLIs; real ground truth still pending | **Original**; current product gate |
 | Voice control | Yes | No | **Defer**; not aligned with offline-first core |
 | ALPR / person-adjacent features | Upstream maps ALPR camera *locations* | No | **Exclude** from our product scope |
 
