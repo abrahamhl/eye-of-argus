@@ -112,3 +112,16 @@ From chat + GitHub connection you can:
 Local hardware is still useful for physical field collection and any test that
 requires a real browser/device/sensor, but it is not required for ordinary
 repository maintenance.
+
+
+## Five Oracles audit
+
+For high-stakes product/release decisions, send:
+
+> Activa 5 Oráculos y audita `abrahamhl/eye-of-argus` at current HEAD. Read
+> `skills/five-oracles/SKILL.md` first and follow it. Separate public evidence
+> from private commercial strategy. Do not merge or deploy until the Finalist
+> gives the deployment gate.
+
+The trigger is shorthand. The repository skill, not conversational memory, is
+the durable definition.
