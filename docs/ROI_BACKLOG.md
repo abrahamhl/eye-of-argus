@@ -10,7 +10,7 @@ Until the investor MVP is validated, priority is:
 4. **Only then** expand visualisation (including Cesium) or add new feature families.
 
 The current buyer hypothesis and measurable gates live in
-[`INVESTOR_MVP_SPEC.md`](INVESTOR_MVP_SPEC.md). A feature that cannot improve a
+[`PRODUCT_VALIDATION_SPEC.md`](PRODUCT_VALIDATION_SPEC.md). A feature that cannot improve a
 measured user outcome, validation quality or reliability is deferred.
 
 Every major engineering feature gets a heuristic score. We do **not** implement impressive-but-useless
