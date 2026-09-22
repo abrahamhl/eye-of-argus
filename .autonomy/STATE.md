@@ -48,7 +48,7 @@ Do not retype these numbers elsewhere.
 - Real-world calibration: needs actual field ground truth. The kit now exists;
   status is BLOCKED on data collection (`docs/VALIDATION_GUIDE.md`).
 - Buyer value: no baseline-vs-Argus task study or willingness-to-pay evidence
-  exists yet (`docs/INVESTOR_MVP_SPEC.md`).
+  exists yet (`docs/PRODUCT_VALIDATION_SPEC.md`).
 - Live reliability history: only single dated runs exist.
 - Cesium globe integration: not started, intentionally lower priority until the
   validation gates above have evidence.
@@ -57,7 +57,7 @@ Do not retype these numbers elsewhere.
 
 1. Run the field pilot (10–20 sites; reach the reporting gate before making an
    accuracy claim) and feed `bin/validate.mjs`.
-2. Run one buyer-task experiment from `docs/INVESTOR_MVP_SPEC.md`: baseline vs
+2. Run one buyer-task experiment from `docs/PRODUCT_VALIDATION_SPEC.md`: baseline vs
    Argus, same task, measured time/outcome/uncertainty.
 3. Persist live-smoke reliability history (S43).
 4. Only after those gates: Cesium presentation work, offline replay and further
