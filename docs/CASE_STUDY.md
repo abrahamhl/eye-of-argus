@@ -62,7 +62,7 @@ upstream's globe is not claimed as ours.
 
 Engineering reproducibility is demonstrated; real-world product performance and
 commercial demand are not. The next proof is the field pilot plus a narrow
-buyer-task experiment defined in [`INVESTOR_MVP_SPEC.md`](INVESTOR_MVP_SPEC.md).
+buyer-task experiment defined in [`PRODUCT_VALIDATION_SPEC.md`](PRODUCT_VALIDATION_SPEC.md).
 Until those complete, the project makes no accuracy, customer-demand or ROI
 claim.
 
