@@ -273,7 +273,7 @@ export const XYZ_ENTRIES = Object.freeze([
     z: 'Freeze the methodology, collect matched field observations with the offline PWA, then merge and score them with the validation pipeline.',
     evidence: {
       tests: ['test/calibration-validation.test.mjs'],
-      source: ['docs/VALIDATION_GUIDE.md', 'docs/INVESTOR_MVP_SPEC.md', 'bin/validate.mjs'],
+      source: ['docs/VALIDATION_GUIDE.md', 'docs/PRODUCT_VALIDATION_SPEC.md', 'bin/validate.mjs'],
       note: 'Outcome is BLOCKED on real observations, not on implementation.',
       commit: null,
     },
@@ -290,7 +290,7 @@ export const XYZ_ENTRIES = Object.freeze([
     z: 'Run one narrow buyer pilot with the same task before and after Argus; record time, decision outcome, uncertainty and follow-up intent.',
     evidence: {
       tests: [],
-      source: ['docs/INVESTOR_MVP_SPEC.md'],
+      source: ['docs/PRODUCT_VALIDATION_SPEC.md'],
       note: 'Commercial outcome must remain BLOCKED until external user evidence exists.',
       commit: null,
     },
